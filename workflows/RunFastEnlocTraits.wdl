@@ -2,10 +2,10 @@ version 1.0
 
 
 task SplitFastenloc {
-  input {
-    File FastEnlocTraitData
-    Int traits_per_chunk = 25
-  }
+    input {
+        File FastEnlocTraitData
+        Int traits_per_chunk = 25
+    }
 
   command <<<
 
@@ -15,18 +15,18 @@ task SplitFastenloc {
       --input ~{FastEnlocTraitData} \
       --traits-per-chunk ~{traits_per_chunk}
 
-  >>>
+    >>>
 
   output {
     File manifest = "chunk_manifest.txt"
     Array[File] chunk_files = read_lines("chunk_manifest.txt")
   }  
   
-  runtime {
-    docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
-    memory: "32G"
-    cpu: 1
-  }
+    runtime {
+        docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
+        memory: "32G"
+        cpu: 1
+    }
 }
 
 task FastEnloc {
@@ -47,63 +47,64 @@ task FastEnloc {
         print >> outfile
         close(outfile)
     }
-
-    ' ~{TraitData}'
+    '~{TraitData}'
     for f in traits/*.txt; do
 
         trait=$(basename "$f" .txt)
-
-        /home/jupyter/fastenloc-3.2/src/fastenloc \
+        echo "$trait"
+        fastenloc \
             -eqtl ~{QTLData} \
             -gwas "$f" \
             -total_variants ~{NumberVariants} \
             -prefix "$trait"
-
     done
 
     >>>
-  output {
-    Array[File] gene_outputs = glob("results/*.enloc.gene.out")
-    Array[File] enrich_outputs = glob("results/*.enloc.enrich.out")
-    Array[File] mi_outputs = glob("results/*.enloc.mi.out")
-    Array[File] sig_outputs = glob("results/*.enloc.sig.out")
-    Array[File] snp_outputs = glob("results/*.enloc.snp.out")
-    Array[File] all_outputs = glob("results/*.enloc.*.out")
-  }
+    runtime {
+        docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
+        memory: "8G"
+        cpu: 1
+    }
+
+    output {
+        Array[File] gene_outputs = glob("results/*.enloc.gene.out")
+        Array[File] enrich_outputs = glob("results/*.enloc.enrich.out")
+        Array[File] mi_outputs = glob("results/*.enloc.mi.out")
+        Array[File] sig_outputs = glob("results/*.enloc.sig.out")
+        Array[File] snp_outputs = glob("results/*.enloc.snp.out")
+        Array[File] all_outputs = glob("results/*.enloc.*.out")
+    }
 }
 
 
 workflow RunFastenloc {
-  input {
-    File FastEnlocTraitData
-    File QTLData
-    Int  NumberVariants
-  }
-
-  call SplitFastenloc {
-    input:
-      FastEnlocTraitData = FastEnlocTraitData
-  }
-
-  scatter (chunk in SplitFastenloc.chunk_files) {
-
-    call FastEnloc {
-      input:
-        TraitData = chunk,
-        QTLData = QTLData,
-        NumberVariants = NumberVariants
+    input {
+        File FastEnlocTraitData
+        File QTLData
+        Int  NumberVariants
     }
 
-  }
+    call SplitFastenloc {
+        input:
+            FastEnlocTraitData = FastEnlocTraitData
+    }
 
-  output {
-    Array[File] trait_chunks = SplitFastenloc.chunk_files
-    Array[Array[File]] gene_outputs = FastEnloc.gene_outputs
-    Array[Array[File]] enrich_outputs = FastEnloc.enrich_outputs
-    Array[Array[File]] mi_outputs = FastEnloc.mi_outputs
-    Array[Array[File]] sig_outputs = FastEnloc.sig_outputs
-    Array[Array[File]] snp_outputs = FastEnloc.snp_outputs
-    Array[Array[File]] all_outputs = FastEnloc.all_outputs
-  }
+    scatter (chunk in SplitFastenloc.chunk_files) {
+        call FastEnloc {
+          input:
+            TraitData = chunk,
+            QTLData = QTLData,
+            NumberVariants = NumberVariants
+        }
+    }
 
+    output {
+        Array[File] trait_chunks = SplitFastenloc.chunk_files
+        Array[Array[File]] gene_outputs = FastEnloc.gene_outputs
+        Array[Array[File]] enrich_outputs = FastEnloc.enrich_outputs
+        Array[Array[File]] mi_outputs = FastEnloc.mi_outputs
+        Array[Array[File]] sig_outputs = FastEnloc.sig_outputs
+        Array[Array[File]] snp_outputs = FastEnloc.snp_outputs
+        Array[Array[File]] all_outputs = FastEnloc.all_outputs
+    }
 }
