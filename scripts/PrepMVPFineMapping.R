@@ -1,10 +1,12 @@
 library(readxl)
 library(tidyverse)
 library(dat.table)
+library(optparse)
 
 
-
+######### FUNCTIONS #######
 CleanMVPData <- function(MVP_dat) {
+message('Cleaning MVP Data')
 MVPCleaned <- MVP_dat %>% 
     group_by(Locus,Population,`Population Signal`) %>% 
     mutate(cpip = sum(`CS-Level Pip`),
@@ -63,5 +65,26 @@ make_fastenloc_input_MVP <- function(df,out_file = NULL,build = "b38") {
   }
   out
 }
+
+
+
+####### PARSE ARGUMENTS #########
+option_list <- list(
+    optparse::make_option(c("--TraitData"), type = "character", default = NULL,
+                          help = "Allele frequency file"),
+    )
+
+opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
+TraitData <- opt$TraitData
+
+######## CLEAN DATA #######
+MVPFinemapping <- read_excel(TraitData,skip = 1)
+FastEnlocMVP <- MVPFinemapping %>% 
+    filter(Trait == 'WBC_Mean_INT') %>% 
+    CleanMVPData() %>% 
+    make_fastenloc_input_MVP()  
+FastEnlocMVP %>%  write_tsv(paste0(output_dir,'MVP.all.fastenloc.vcf.gz'),col_names = FALSE)
+
+
 
 
