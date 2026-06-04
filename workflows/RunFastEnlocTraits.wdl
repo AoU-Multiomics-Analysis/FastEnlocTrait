@@ -39,17 +39,20 @@ task FastEnloc {
     command <<<
       mkdir -p traits results
 
-      awk -F'\t' "
-      {
+    awk -F'\t' "
+    NR == 1 && (\$6 == \"annotation\" || \$6 == \"locus_string\") { next }
+    {
         split(\$6, a, \";\")
         trait = a[1]
-        outfile = \"traits/\" trait \".txt\"
-        print >> outfile
-        close(outfile)
-      }
-      " ~{TraitData}
 
-      for f in traits/*.txt; do
+        outfile = \"traits/\" trait \".txt\"
+
+        print >> outfile
+
+        close(outfile)
+    }
+    " ~{TraitData}      
+    for f in traits/*.txt; do
         trait=$(basename "$f" .txt)
 
         fastenloc \
