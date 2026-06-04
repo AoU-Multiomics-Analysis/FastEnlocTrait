@@ -14,7 +14,19 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
     conda-forge::r-r.utils \
     conda-forge::r-bedr \
     bioconda::htslib \
-    conda-forge::r-readxl
-
+    conda-forge::r-readxl \
+    conda-forge::git \
+    conda-forge::make \
+    conda-forge::gxx \
+    conda-forge::gcc \
+    conda-forge::gsl \
+    conda-forge::zlib \
+    conda-forge::boost-cpp \
+    && micromamba clean -a -y
 COPY scripts/*  . 
+RUN git clone https://github.com/xqwen/fastenloc.git && \
+    cd fastenloc/src && \
+    make && \
+    cp fastenloc /usr/local/bin/fastenloc
+
 CMD ["bash"]
