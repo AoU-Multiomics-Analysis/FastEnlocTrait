@@ -57,8 +57,8 @@ task FastEnloc {
         fastenloc \
           -eqtl ~{QTLData} \
           -gwas "$f" \
-          -total_variants $(cat ~{NumberVariants}) \
-          -prefix "results/${trait}"
+          -total_variants  ~{NumberVariants} \
+          -prefix "${trait}"
       done
     >>>    
     runtime {
@@ -68,12 +68,12 @@ task FastEnloc {
     }
 
     output {
-        Array[File] gene_outputs = glob("results/*.enloc.gene.out")
-        Array[File] enrich_outputs = glob("results/*.enloc.enrich.out")
-        Array[File] mi_outputs = glob("results/*.enloc.mi.out")
-        Array[File] sig_outputs = glob("results/*.enloc.sig.out")
-        Array[File] snp_outputs = glob("results/*.enloc.snp.out")
-        Array[File] all_outputs = glob("results/*.enloc.*.out")
+        Array[File] gene_outputs = glob("*.enloc.gene.out")
+        Array[File] enrich_outputs = glob("*.enloc.enrich.out")
+        Array[File] mi_outputs = glob("*.enloc.mi.out")
+        Array[File] sig_outputs = glob("*.enloc.sig.out")
+        Array[File] snp_outputs = glob("*.enloc.snp.out")
+        Array[File] all_outputs = glob("*.enloc.*.out")
     }
 }
 
