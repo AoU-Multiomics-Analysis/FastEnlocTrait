@@ -108,6 +108,7 @@ task AggregateFiles {
     runtime {
         docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
         memory: "64G"
+        disks: "local-disk 500 SSD"
         cpu: 1
     }
 }
