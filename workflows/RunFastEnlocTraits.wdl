@@ -17,10 +17,10 @@ task SplitFastenloc {
 
     >>>
 
-  output {
-    File manifest = "chunk_manifest.txt"
-    Array[File] chunk_files = read_lines("chunk_manifest.txt")
-  }  
+    output {
+        File manifest = "chunk_manifest.txt"
+        Array[File] chunk_files = glob("chunks/*.txt")  
+    }  
   
     runtime {
         docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
