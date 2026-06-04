@@ -11,7 +11,7 @@ task SplitFastenloc {
 
     set -euo pipefail
 
-    Rscript  /tmp/SplitTraitData.R \
+    Rscript  SplitTraitData.R \
       --input ~{FastEnlocTraitData} \
       --traits-per-chunk ~{traits_per_chunk}
 
