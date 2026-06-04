@@ -37,8 +37,6 @@ task FastEnloc {
     }
 
     command <<<
-      set -euo pipefail
-
       mkdir -p traits results
 
       awk -F'\t' "
