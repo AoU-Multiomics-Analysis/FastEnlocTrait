@@ -6,7 +6,6 @@ library(optparse)
 
 ######### FUNCTIONS #######
 CleanMVPData <- function(MVP_dat) {
-message('Cleaning MVP Data')
 MVPCleaned <- MVP_dat %>% 
     group_by(Locus,Population,`Population Signal`) %>% 
     mutate(cpip = sum(`CS-Level Pip`),
@@ -15,7 +14,7 @@ MVPCleaned <- MVP_dat %>%
     mutate(variant = paste0(CHR,'_',BP38,'_',alleles)) %>%
     separate(alleles,into = c('ref','alt')) %>% 
     mutate(variant = str_replace(variant,':','_')) %>%
-    mutate(cs_id = paste(Trait,Population,Locus,`Population Signal`,sep = '_')) %>% 
+    mutate(cs_id = paste0(Trait,';',Population,'_',Locus,'_',`Population Signal`)) %>% 
     ungroup() %>% 
     select(CHR,BP38,variant,ref,alt,cs_id,`CS-Level Pip`,cpip)   
  MVPCleaned   
