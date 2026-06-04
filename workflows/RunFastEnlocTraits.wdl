@@ -37,29 +37,30 @@ task FastEnloc {
     }
 
     command <<<
-    mkdir -p traits
+      set -euo pipefail
 
-    awk -F'\t' '
-    {
-        split($6, a, ";")
+      mkdir -p traits results
+
+      awk -F'\t' "
+      {
+        split(\$6, a, \";\")
         trait = a[1]
-        outfile = "traits/" trait ".txt"
+        outfile = \"traits/\" trait \".txt\"
         print >> outfile
         close(outfile)
-    }
-    '~{TraitData}'
-    for f in traits/*.txt; do
+      }
+      " ~{TraitData}
 
+      for f in traits/*.txt; do
         trait=$(basename "$f" .txt)
-        echo "$trait"
-        fastenloc \
-            -eqtl ~{QTLData} \
-            -gwas "$f" \
-            -total_variants ~{NumberVariants} \
-            -prefix "$trait"
-    done
 
-    >>>
+        fastenloc \
+          -eqtl ~{QTLData} \
+          -gwas "$f" \
+          -total_variants $(cat ~{NumberVariants}) \
+          -prefix "results/${trait}"
+      done
+    >>>    
     runtime {
         docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
         memory: "8G"
