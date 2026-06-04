@@ -1,9 +1,7 @@
-## Use micromamba as the base image
 FROM mambaorg/micromamba:1.5.3
-#FROM ghcr.io/prefix-dev/pixi:latest
 
-## Set up environment
 ENV MAMBA_DOCKERFILE_ACTIVATE=1
+
 ENV PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 RUN micromamba install -y -n base -c conda-forge -c bioconda \
@@ -13,20 +11,28 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
     conda-forge::r-arrow \
     conda-forge::r-r.utils \
     conda-forge::r-bedr \
-    bioconda::htslib \
     conda-forge::r-readxl \
+    bioconda::htslib \
     conda-forge::git \
     conda-forge::make \
-    conda-forge::gxx \
     conda-forge::gcc \
+    conda-forge::gxx \
     conda-forge::gsl \
     conda-forge::zlib \
-    conda-forge::boost-cpp \
     && micromamba clean -a -y
-COPY scripts/*  . 
-RUN git clone https://github.com/xqwen/fastenloc.git && \
-    cd fastenloc/src && \
+
+USER root
+
+RUN git clone https://github.com/xqwen/fastenloc.git /opt/fastenloc && \
+    cd /opt/fastenloc/src && \
     make && \
-    cp fastenloc /usr/local/bin/fastenloc
+    cp fastenloc /usr/local/bin/fastenloc && \
+    chmod +x /usr/local/bin/fastenloc
+
+USER mambauser
+
+WORKDIR /home/mambauser
+
+COPY scripts/* .
 
 CMD ["bash"]
