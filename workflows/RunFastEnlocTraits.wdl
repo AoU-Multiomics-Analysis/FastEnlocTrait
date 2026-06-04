@@ -60,6 +60,17 @@ task FastEnloc {
           -gwas "$f" \
           -total_variants  ~{NumberVariants} \
           -prefix "${trait}"
+        
+        # add a column for the trait thats analyzed to each enloc output
+        for out in results/${trait}.enloc.*.out; do
+            header=$(head -n1 "$out")
+            {
+                echo -e "trait\t${header}"
+                tail -n +2 "$out" | \
+                    awk -v trait="$trait" 'BEGIN{OFS="\t"}{print trait,$0}'
+            } > tmp
+            mv tmp "$out"
+        done
       done
     >>>    
     runtime {
