@@ -7,14 +7,11 @@ task SplitFastenloc {
         Int traits_per_chunk = 25
     }
 
-  command <<<
-
-    set -euo pipefail
-
-    Rscript ~/SplitTraitData.R \
-      --input ~{FastEnlocTraitData} \
-      --traits-per-chunk ~{traits_per_chunk}
-
+    command <<<
+        set -euo pipefail
+        Rscript ~/SplitTraitData.R \
+          --input ~{FastEnlocTraitData} \
+          --traits-per-chunk ~{traits_per_chunk}
     >>>
 
     output {
@@ -37,7 +34,7 @@ task FastEnloc {
     }
 
     command <<<
-      mkdir -p traits results
+    mkdir -p traits results
 
     awk -F'\t' "
     NR == 1 && (\$6 == \"annotation\" || \$6 == \"locus_string\") { next }
@@ -62,7 +59,7 @@ task FastEnloc {
           -prefix "${trait}"
         
         # add a column for the trait thats analyzed to each enloc output
-        for out in results/${trait}.enloc.*.out; do
+        for out in ${trait}.enloc.*.out; do
             header=$(head -n1 "$out")
             {
                 echo -e "trait\t${header}"
