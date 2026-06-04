@@ -89,6 +89,32 @@ task FastEnloc {
     }
 }
 
+task AggregateFiles {
+
+    input {
+        Array[File] files
+        String output_name
+    }
+    command <<<
+        set -euo pipefail
+        first_file=$(head -n 1 ~{write_lines(files)})
+        head -n 1 "$first_file" > ~{output_name}
+        while read f; do
+          tail -n +2 "$f" >> ~{output_name}
+        done < ~{write_lines(files)}
+    >>>
+
+    output {
+        File combined = "~{output_name}"
+    }
+
+    runtime {
+        docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
+        memory: "64G"
+        cpu: 1
+    }
+}
+
 
 workflow RunFastenloc {
     input {
@@ -110,14 +136,41 @@ workflow RunFastenloc {
             NumberVariants = NumberVariants
         }
     }
+    call AggregateFiles as AggregateGene {
+      input:
+        files = flatten(FastEnloc.gene_outputs),
+        output_name = "combined.enloc.gene.out"
+    }
+
+    call AggregateFiles as AggregateEnrich {
+      input:
+        files = flatten(FastEnloc.enrich_outputs),
+        output_name = "combined.enloc.enrich.out"
+    }
+
+    call AggregateFiles as AggregateMI {
+      input:
+        files = flatten(FastEnloc.mi_outputs),
+        output_name = "combined.enloc.mi.out"
+    }
+
+    call AggregateFiles as AggregateSig {
+      input:
+        files = flatten(FastEnloc.sig_outputs),
+        output_name = "combined.enloc.sig.out"
+    }
+
+    call AggregateFiles as AggregateSNP {
+      input:
+        files = flatten(FastEnloc.snp_outputs),
+        output_name = "combined.enloc.snp.out"
+    }
 
     output {
-        Array[File] trait_chunks = SplitFastenloc.chunk_files
-        Array[Array[File]] gene_outputs = FastEnloc.gene_outputs
-        Array[Array[File]] enrich_outputs = FastEnloc.enrich_outputs
-        Array[Array[File]] mi_outputs = FastEnloc.mi_outputs
-        Array[Array[File]] sig_outputs = FastEnloc.sig_outputs
-        Array[Array[File]] snp_outputs = FastEnloc.snp_outputs
-        Array[Array[File]] all_outputs = FastEnloc.all_outputs
+      File combined_gene_out = AggregateGene.combined
+      File combined_enrich_out = AggregateEnrich.combined
+      File combined_mi_out = AggregateMI.combined
+      File combined_sig_out = AggregateSig.combined
+      File combined_snp_out = AggregateSNP.combined
     }
 }
