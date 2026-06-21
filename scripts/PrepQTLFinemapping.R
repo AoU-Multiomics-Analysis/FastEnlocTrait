@@ -1,6 +1,6 @@
 library(readxl)
 library(tidyverse)
-library(dat.table)
+library(data.table)
 library(optparse)
 
 FormatFastEnloc <- function(input_df) {
@@ -58,7 +58,11 @@ option_list <- list(
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 QTLData <- opt$QTLData
 QTLType <- opt$QTLType
-Outputfile <- opt$OutputFile
+OutputFile <- opt$OutputFile
+
+if (is.null(QTLData)) stop("Must provide --QTLData")
+if (is.null(QTLType)) stop("Must provide --QTLType")
+if (is.null(OutputFile)) stop("Must provide --OutputFile")
 
 ######## LOAD DATA #############
 
@@ -70,7 +74,7 @@ QTL <- fread(QTLData) %>%
     mutate(cpip = sum(pip),number_variants = dplyr::n())  %>% 
     ungroup() %>%
     FormatFastEnloc
-} if (QTLType == 'Splicing') {
+} else if (QTLType == 'Splicing') {
 QTL <- fread(QTLData) %>% 
     mutate(molecular_trait_id = stringr::str_extract(molecular_trait_id, "ENSG[0-9]+")) %>% 
     select(molecular_trait_id,variant,pip,cs_id) %>% 
@@ -78,7 +82,7 @@ QTL <- fread(QTLData) %>%
     mutate(cpip = sum(pip),number_variants = dplyr::n()) %>%
     ungroup() %>% 
     FormatFastEnloc
-} if (QTLType == 'Protein') {
+} else if (QTLType == 'Protein') {
 QTL <- fread(QTLData) %>% 
     filter(group == 'COMB') %>% 
     extract(
@@ -94,6 +98,8 @@ QTL <- fread(QTLData) %>%
     mutate(cpip = sum(pip),number_variants = dplyr::n()) %>%
     ungroup() %>% 
     FormatFastEnloc
+} else {
+    stop("--QTLType must be one of Expression, Splicing, or Protein")
 } 
 
 # output extension should be .vcf.gz

@@ -1,6 +1,6 @@
 library(readxl)
 library(tidyverse)
-library(dat.table)
+library(data.table)
 library(optparse)
 
 
@@ -70,11 +70,17 @@ make_fastenloc_input_MVP <- function(df,out_file = NULL,build = "b38") {
 ####### PARSE ARGUMENTS #########
 option_list <- list(
     optparse::make_option(c("--TraitData"), type = "character", default = NULL,
-                          help = "Allele frequency file"),
-    )
+                          help = "MVP fine-mapping Excel file"),
+    optparse::make_option(c("--OutputFile"), type = "character", default = "MVP.all.fastenloc.vcf.gz",
+                          help = "Output fastENLOC trait file [default: %default]")
+)
 
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 TraitData <- opt$TraitData
+OutputFile <- opt$OutputFile
+
+if (is.null(TraitData)) stop("Must provide --TraitData")
+if (is.null(OutputFile)) stop("Must provide --OutputFile")
 
 ######## CLEAN DATA #######
 MVPFinemapping <- read_excel(TraitData,skip = 1)
@@ -82,8 +88,7 @@ FastEnlocMVP <- MVPFinemapping %>%
     filter(Trait == 'WBC_Mean_INT') %>% 
     CleanMVPData() %>% 
     make_fastenloc_input_MVP()  
-FastEnlocMVP %>%  write_tsv(paste0(output_dir,'MVP.all.fastenloc.vcf.gz'),col_names = FALSE)
-
+FastEnlocMVP %>%  write_tsv(OutputFile,col_names = FALSE)
 
 
 
