@@ -148,7 +148,7 @@ task AggregateGzTsvFiles {
         on.exit(close(out))
         wrote_header <- FALSE
         for (path in files) {
-          con <- if (grepl("\\.gz$", path)) gzfile(path, "rt") else file(path, "rt")
+          con <- if (endsWith(path, ".gz")) gzfile(path, "rt") else file(path, "rt")
           header <- readLines(con, n = 1)
           if (length(header) == 0) {
             close(con)
