@@ -159,6 +159,26 @@ field_at <- function(fields, index) {
   }
 }
 
+collapse_prefix <- function(fields, end_index) {
+  if (is.na(end_index) || end_index < 1) {
+    NA_character_
+  } else {
+    paste(fields[seq_len(end_index)], collapse = " ")
+  }
+}
+
+max_or_na <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
+}
+
+trait_key <- function(x) {
+  x <- as.character(x)
+  out <- tolower(gsub("[^A-Za-z0-9]+", "", x))
+  out[is.na(x) | out == ""] <- NA_character_
+  out
+}
+
 top_value_by_score <- function(value, score) {
   value <- as.character(value)
   score <- suppressWarnings(as.numeric(score))
@@ -183,7 +203,7 @@ read_sig <- function(path) {
     ) %>%
     filter(!is.na(signal_index)) %>%
     mutate(
-      source_trait = map2_chr(fields, signal_index, ~ if (.y > 1) .x[[1]] else NA_character_),
+      source_trait = map2_chr(fields, signal_index, ~ collapse_prefix(.x, .y - 1L)),
       signal  = map2_chr(fields, signal_index, field_at),
       RCP     = map2_dbl(fields, signal_index, ~ suppressWarnings(as.numeric(field_at(.x, .y + 5)))),
       LCP     = map2_dbl(fields, signal_index, ~ suppressWarnings(as.numeric(field_at(.x, .y + 6)))),
@@ -202,9 +222,9 @@ read_sig <- function(path) {
 }
 
 # ---- 2. gene.out (GRCP/GLCP) ----------------------------------------------
-# gene.out is "Gene<TAB><TAB>GRCP<TAB>GLCP" -- the double tab yields an empty
-# field, so split on runs of whitespace and take the token + the last two
-# numeric values (GRCP, GLCP) explicitly rather than by fixed column index.
+# gene.out rows may be prefixed by a human-readable trait with spaces. Split on
+# whitespace, then read from the right: final two fields are GRCP/GLCP, the
+# field before them is the gene, and any earlier fields are the source trait.
 read_gene <- function(path) {
   raw <- read_lines(path)
   raw <- raw[!str_detect(raw, "^(trait\\s+)?Gene\\b")] # drop header
@@ -212,10 +232,19 @@ read_gene <- function(path) {
   tibble(line = raw) %>%
     mutate(
       fields = str_split(str_trim(line), "\\s+"),
-      source_trait = map_chr(fields, ~ if (length(.x) >= 4) .x[[1]] else NA_character_),
-      gene   = map_chr(fields, ~ if (length(.x) >= 4) .x[[2]] else .x[[1]]),
-      GRCP   = map_dbl(fields, ~ suppressWarnings(as.numeric(.x[length(.x) - 1]))),
-      GLCP   = map_dbl(fields, ~ suppressWarnings(as.numeric(.x[length(.x)])))
+      gene_index = map_int(fields, ~ length(.x) - 2L),
+      source_trait = map2_chr(fields, gene_index, ~ collapse_prefix(.x, .y - 1L)),
+      gene   = map2_chr(fields, gene_index, field_at),
+      GRCP   = map_dbl(fields, ~ if (length(.x) >= 3) {
+        suppressWarnings(as.numeric(.x[length(.x) - 1]))
+      } else {
+        NA_real_
+      }),
+      GLCP   = map_dbl(fields, ~ if (length(.x) >= 3) {
+        suppressWarnings(as.numeric(.x[length(.x)]))
+      } else {
+        NA_real_
+      })
     ) %>%
     filter(!is.na(GLCP)) %>%
     transmute(source_trait = as.character(source_trait),
@@ -275,16 +304,18 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA,
     out <- out %>% mutate(n_shared = NA_integer_, CLPP = NA_real_)
   }
 
-  gene_join_by <- if (any(!is.na(gene$source_trait)) && any(!is.na(out$source_trait))) {
-    c("source_trait", "gene")
-  } else {
-    "gene"
-  }
-  gene_for_join <- if (identical(gene_join_by, "gene")) {
-    select(gene, -source_trait)
-  } else {
-    gene
-  }
+  gene_by_trait <- gene %>%
+    mutate(source_trait_key = trait_key(source_trait)) %>%
+    filter(!is.na(source_trait_key)) %>%
+    group_by(source_trait_key, gene) %>%
+    summarise(GRCP_by_trait = max_or_na(GRCP),
+              GLCP_by_trait = max_or_na(GLCP),
+              .groups = "drop")
+  gene_by_gene <- gene %>%
+    group_by(gene) %>%
+    summarise(GRCP_by_gene = max_or_na(GRCP),
+              GLCP_by_gene = max_or_na(GLCP),
+              .groups = "drop")
   study_value <- metadata_value(study)
   trait_value <- metadata_value(trait)
   trait_category_value <- metadata_value(trait_category)
@@ -293,8 +324,12 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA,
   layer_value <- metadata_value(layer)
 
   out %>%
-    left_join(gene_for_join, by = gene_join_by) %>%
+    mutate(source_trait_key = trait_key(source_trait)) %>%
+    left_join(gene_by_trait, by = c("source_trait_key", "gene")) %>%
+    left_join(gene_by_gene, by = "gene") %>%
     mutate(
+      GRCP = coalesce(GRCP_by_trait, GRCP_by_gene),
+      GLCP = coalesce(GLCP_by_trait, GLCP_by_gene),
       study = study_value,
       trait = if (is.na(trait_value)) source_trait else trait_value,
       trait_category = trait_category_value,
@@ -305,6 +340,8 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA,
       GRCP_pass_FDR = !is.na(GRCP) & GRCP >= grcp_thr,
       GLCP_pass_FDR = !is.na(GLCP) & GLCP >= glcp_thr
     ) %>%
+    select(-source_trait_key, -GRCP_by_trait, -GLCP_by_trait,
+           -GRCP_by_gene, -GLCP_by_gene) %>%
     select(study, trait, trait_category, n_variants, n_credible_sets,
            layer, gwas_cs, qtl_sig, gene,
            RCP, LCP, CLPP, n_shared, GRCP, GLCP,
