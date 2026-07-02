@@ -23,6 +23,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `harmonize.wdl` | `HarmonizeColoc` |
 | `input_validation.wdl` | `ValidateGWASManifest`, `ValidateQTLInputs` |
 | `localize.wdl` | `LocalizeGWASData` |
+| `summarize.wdl` | `SummarizeColoc` |
 
 `workflows/tasks/split.wdl` is retained as an optional legacy task for pre-splitting multi-trait inputs, but it is not imported by the main workflow.
 
@@ -31,6 +32,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | Input | Type | Description |
 | --- | --- | --- |
 | `GWASManifest` | `File` | Tab-delimited manifest describing one or more GWAS analysis units. |
+| `GTF` | `File` | GENCODE GTF used by the final summary step to annotate protein-coding genes and gene names. |
 | `QTLData` | `Array[File]` | One or more QTL fastENLOC input files, each formatted for `fastenloc -eqtl`. |
 | `QTLLabels` | `Array[String]` | Label for each QTL input, such as `eQTL`, `sQTL`, or `pQTL`. Must have the same length as `QTLData`, be unique, and match `[A-Za-z0-9._-]+`. |
 | `min_clpp` | `Float` | Minimum CLPP value to report. Defaults to `0.01`. |
@@ -39,6 +41,10 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `consensus_output_prefix` | `String` | Prefix for consensus locus map and summary outputs. Defaults to `consensus_loci`. |
 | `harmonized_fdr_level` | `Float` | Bayesian FDR level used for harmonized pass flags. Defaults to `0.05`. |
 | `harmonized_output_prefix` | `String` | Prefix for harmonized signal, credible-set, and gene outputs. Defaults to `harmonized_coloc`. |
+| `summary_gene_threshold` | `String` | Threshold used to define colocalizing genes in the final gene summary. Defaults to `any`; accepted values are `any`, `GLCP_FDR`, `RCP_FDR`, `RCP_0.5`, `CLPP_0.01`, and `CLPP_0.05`. |
+| `coloc_rate_output_name` | `String` | Filename for the final trait/layer colocalization-rate summary. Defaults to `coloc_rate_by_trait.tsv`. |
+| `gene_summary_output_name` | `String` | Filename for the final trait/layer gene summary. Defaults to `gene_summary_by_trait.tsv`. |
+| `gene_list_output_name` | `String` | Filename for the final long colocalizing gene table. Defaults to `colocalizing_genes_long.tsv`. |
 
 ## GWAS Manifest
 
@@ -60,6 +66,7 @@ Each manifest row is localized and analyzed independently, so different studies 
 ```json
 {
   "RunFastenloc.GWASManifest": "gwas_manifest.tsv",
+  "RunFastenloc.GTF": "gencode.v44.annotation.gtf.gz",
   "RunFastenloc.QTLData": [
     "eqtl.fastenloc.vcf.gz",
     "sqtl.fastenloc.vcf.gz",
@@ -71,7 +78,8 @@ Each manifest row is localized and analyzed independently, so different studies 
   "RunFastenloc.consensus_jaccard": 0.90,
   "RunFastenloc.consensus_output_prefix": "consensus_loci",
   "RunFastenloc.harmonized_fdr_level": 0.05,
-  "RunFastenloc.harmonized_output_prefix": "harmonized_coloc"
+  "RunFastenloc.harmonized_output_prefix": "harmonized_coloc",
+  "RunFastenloc.summary_gene_threshold": "any"
 }
 ```
 
@@ -86,6 +94,7 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 5. Per-GWAS/QTL outputs are aggregated, then harmonized with the consensus map.
 6. Per-GWAS all-QTL outputs are aggregated.
 7. Global all-GWAS/all-QTL outputs are aggregated.
+8. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
 
 `MergeCredibleSets` only merges cross-study credible sets within the same trait when their variant-membership Jaccard index is at least `consensus_jaccard`. Same-study credible sets are kept distinct.
 
@@ -108,6 +117,9 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 | `harmonized_signal_out` | All-GWAS/all-QTL signal-level harmonized table. |
 | `harmonized_credible_set_out` | All-GWAS/all-QTL credible-set-level harmonized table. |
 | `harmonized_gene_out` | All-GWAS/all-QTL gene-level harmonized table. |
+| `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across de-duplicated consensus loci. |
+| `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
+| `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, consensus locus, GTF gene type, and protein-coding status. |
 
 ## Per-GWAS Outputs
 

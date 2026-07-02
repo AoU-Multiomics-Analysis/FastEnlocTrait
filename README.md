@@ -1,6 +1,6 @@
 # FastEnlocTrait
 
-FastEnlocTrait is a WDL workflow for running colocalization across one or more GWAS analysis units and one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, merges GWAS credible sets into trait-level consensus loci, and harmonizes the coloc metrics into tidy downstream tables.
+FastEnlocTrait is a WDL workflow for running colocalization across one or more GWAS analysis units and one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, merges GWAS credible sets into trait-level consensus loci, harmonizes the coloc metrics, and summarizes trait-level coverage and gene results.
 
 ## What the Workflow Does
 
@@ -10,6 +10,7 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 4. Runs fastENLOC and CLPP for each GWAS/QTL pair.
 5. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
 6. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
+7. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
 
 The main workflow is:
 
@@ -30,6 +31,7 @@ Provide a GWAS manifest plus parallel arrays for QTL files and labels:
 ```json
 {
   "RunFastenloc.GWASManifest": "gwas_manifest.tsv",
+  "RunFastenloc.GTF": "gencode.v44.annotation.gtf.gz",
   "RunFastenloc.QTLData": [
     "eqtl.fastenloc.vcf.gz",
     "sqtl.fastenloc.vcf.gz",
@@ -62,13 +64,16 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | `harmonized_signal_out` | Signal-level table joining fastENLOC RCP/LCP, CLPP, and gene-level GRCP/GLCP. |
 | `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags, per-method gene lists, and `consensus_locus_id` for de-duplicated trait coverage. |
 | `harmonized_gene_out` | Gene-level rollup with best signal metrics and gene-native fastENLOC metrics. |
+| `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across consensus loci. |
+| `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
+| `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, and consensus locus. |
 
 Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.
 
 ## Documentation
 
 - [Workflow reference](docs/workflow.md): WDL inputs, outputs, multi-QTL behavior, and output naming.
-- [Helper scripts](docs/helper-scripts.md): R script usage for preparing inputs, CLPP, and harmonization.
+- [Helper scripts](docs/helper-scripts.md): R script usage for preparing inputs, CLPP, harmonization, and summaries.
 - [Runtime and validation](docs/runtime-validation.md): Docker image, local build, and validation commands.
 
 ## Repository Layout
@@ -84,7 +89,8 @@ Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns pl
 │   ├── SplitTraitData.R
 │   ├── clpp_fastenloc.R
 │   ├── harmonize_coloc.R
-│   └── merge_credible_sets.R
+│   ├── merge_credible_sets.R
+│   └── summarize_coloc.R
 └── workflows/
     ├── tasks/
     │   ├── aggregation.wdl
@@ -94,7 +100,8 @@ Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns pl
     │   ├── harmonize.wdl
     │   ├── input_validation.wdl
     │   ├── localize.wdl
-    │   └── split.wdl
+    │   ├── split.wdl
+    │   └── summarize.wdl
     └── RunFastEnlocTraits.wdl
 ```
 

@@ -7,10 +7,12 @@ import "tasks/fastenloc.wdl" as fastenloc
 import "tasks/harmonize.wdl" as harmonize
 import "tasks/input_validation.wdl" as input_validation
 import "tasks/localize.wdl" as localize
+import "tasks/summarize.wdl" as summarize
 
 workflow RunFastenloc {
     input {
         File GWASManifest
+        File GTF
         Array[File] QTLData
         Array[String] QTLLabels
         Float min_clpp = 0.01
@@ -19,6 +21,10 @@ workflow RunFastenloc {
         String consensus_output_prefix = "consensus_loci"
         Float harmonized_fdr_level = 0.05
         String harmonized_output_prefix = "harmonized_coloc"
+        String summary_gene_threshold = "any"
+        String coloc_rate_output_name = "coloc_rate_by_trait.tsv"
+        String gene_summary_output_name = "gene_summary_by_trait.tsv"
+        String gene_list_output_name = "colocalizing_genes_long.tsv"
     }
 
     call input_validation.ValidateGWASManifest as ValidateGWASManifest {
@@ -277,6 +283,17 @@ workflow RunFastenloc {
         output_name = harmonized_output_prefix + ".gene.tsv.gz"
     }
 
+    call summarize.SummarizeColoc as SummarizeColoc {
+      input:
+        credible_set_output = AggregateAllHarmonizedCS.combined,
+        gene_output = AggregateAllHarmonizedGene.combined,
+        gtf = GTF,
+        coloc_rate_output_name = coloc_rate_output_name,
+        gene_summary_output_name = gene_summary_output_name,
+        gene_list_output_name = gene_list_output_name,
+        gene_threshold = summary_gene_threshold
+    }
+
     output {
       File normalized_gwas_manifest = ValidateGWASManifest.normalized_manifest
       File localized_gwas_manifest = MergeCredibleSets.localized_manifest
@@ -291,6 +308,9 @@ workflow RunFastenloc {
       File harmonized_signal_out = AggregateAllHarmonizedSignal.combined
       File harmonized_credible_set_out = AggregateAllHarmonizedCS.combined
       File harmonized_gene_out = AggregateAllHarmonizedGene.combined
+      File coloc_rate_by_trait_out = SummarizeColoc.coloc_rate_output
+      File gene_summary_by_trait_out = SummarizeColoc.gene_summary_output
+      File colocalizing_genes_long_out = SummarizeColoc.gene_list_output
       Array[File] per_gwas_combined_gene_out = AggregateGWASGene.combined
       Array[File] per_gwas_combined_enrich_out = AggregateGWASEnrich.combined
       Array[File] per_gwas_combined_mi_out = AggregateGWASMI.combined

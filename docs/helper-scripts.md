@@ -94,3 +94,20 @@ Rscript scripts/harmonize_coloc.R \
 ```
 
 The WDL runs this after per-GWAS/QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables. Metadata flags are stamped into every harmonized output row, and credible-set rollups carry `consensus_locus_id` for de-duplicated trait coverage.
+
+## Summarize Colocalization
+
+`scripts/summarize_coloc.R` summarizes the all-GWAS/all-QTL harmonized outputs after consensus-locus harmonization:
+
+```bash
+Rscript scripts/summarize_coloc.R \
+  --cs harmonized_coloc.cs.tsv.gz \
+  --gene harmonized_coloc.gene.tsv.gz \
+  --gtf gencode.v44.annotation.gtf.gz \
+  --coloc_rate_out coloc_rate_by_trait.tsv \
+  --gene_summary_out gene_summary_by_trait.tsv \
+  --gene_list_out colocalizing_genes_long.tsv \
+  --gene_threshold any
+```
+
+The WDL runs this once at the end of the workflow. It produces trait x QTL-layer summaries plus a `union` layer that counts a consensus locus or gene once if it colocalizes in any QTL layer. Coverage rates use `consensus_locus_id` as the denominator, so cross-study GWAS credible sets for the same trait are not double counted.
