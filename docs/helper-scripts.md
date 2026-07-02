@@ -1,0 +1,75 @@
+# Helper Scripts
+
+The workflow image copies all files under `scripts/` into `/home/mambauser`, so WDL tasks call them as `~/script_name.R`.
+
+## Split Trait Data
+
+`scripts/SplitTraitData.R` splits a multi-trait fastENLOC trait file into chunk files under `chunks/` and writes `chunk_manifest.txt`.
+
+```bash
+Rscript scripts/SplitTraitData.R \
+  --input traits.fastenloc.txt \
+  --traits-per-chunk 25
+```
+
+## Prepare QTL Fine-Mapping Data
+
+`scripts/PrepQTLFinemapping.R` converts fine-mapped QTL data into fastENLOC QTL format.
+
+```bash
+Rscript scripts/PrepQTLFinemapping.R \
+  --QTLData qtl_finemapping.tsv \
+  --QTLType Expression \
+  --OutputFile qtl.fastenloc.vcf.gz
+```
+
+Supported `--QTLType` values:
+
+- `Expression`
+- `Splicing`
+- `Protein`
+
+## Prepare MVP Fine-Mapping Data
+
+`scripts/PrepMVPFineMapping.R` converts an MVP fine-mapping Excel file into fastENLOC trait format.
+
+```bash
+Rscript scripts/PrepMVPFineMapping.R \
+  --TraitData mvp_finemapping.xlsx \
+  --OutputFile MVP.all.fastenloc.vcf.gz
+```
+
+The current script filters the MVP input to `Trait == "WBC_Mean_INT"` before writing output.
+
+## Compute CLPP
+
+`scripts/clpp_fastenloc.R` computes CLPP directly from fastENLOC-format GWAS/trait and QTL files:
+
+```bash
+Rscript scripts/clpp_fastenloc.R \
+  --gwas MVP.all.fastenloc.vcf.gz \
+  --qtl qtl.fastenloc.vcf.gz \
+  --out clpp_pairs.tsv.gz \
+  --min_clpp 0.01
+```
+
+The WDL runs this script on each split trait chunk and QTL input, then aggregates the resulting TSV files per QTL label and across all QTL labels.
+
+## Harmonize fastENLOC and CLPP
+
+`scripts/harmonize_coloc.R` joins combined fastENLOC signal and gene outputs with the combined CLPP pairs file:
+
+```bash
+Rscript scripts/harmonize_coloc.R \
+  --sig combined.enloc.sig.out \
+  --gene combined.enloc.gene.out \
+  --clpp clpp.combined.tsv \
+  --gwas MVP.all.fastenloc.vcf.gz \
+  --out harmonized_coloc.signal.tsv.gz \
+  --cs_out harmonized_coloc.cs.tsv.gz \
+  --gene_out harmonized_coloc.gene.tsv.gz \
+  --fdr_level 0.05 \
+  --layer eQTL
+```
+
+The WDL runs this after per-QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables.
