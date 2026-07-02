@@ -159,6 +159,14 @@ field_at <- function(fields, index) {
   }
 }
 
+top_value_by_score <- function(value, score) {
+  value <- as.character(value)
+  score <- suppressWarnings(as.numeric(score))
+  keep <- !is.na(value) & !is.na(score)
+  if (!any(keep)) return(NA_character_)
+  value[keep][which.max(score[keep])]
+}
+
 # ---- 1. sig.out (RCP) ------------------------------------------------------
 # whitespace-delimited; parse the Signal token into qtl_sig + gwas_cs.
 read_sig <- function(path) {
@@ -185,7 +193,12 @@ read_sig <- function(path) {
     ) %>%
     filter(!is.na(gwas_cs)) %>%           # keep signals mapped to a GWAS cs
     transmute(source_trait = coalesce(source_trait, trait_of_gwas_cs(gwas_cs)),
-              gwas_cs, qtl_sig, gene = gene_of(qtl_sig), RCP, LCP)
+              gwas_cs, qtl_sig, gene = gene_of(qtl_sig), RCP, LCP) %>%
+    # Pin column types so empty tables still join cleanly downstream.
+    mutate(source_trait = as.character(source_trait),
+           gwas_cs = as.character(gwas_cs), qtl_sig = as.character(qtl_sig),
+           gene = as.character(gene),
+           RCP = as.numeric(RCP), LCP = as.numeric(LCP))
 }
 
 # ---- 2. gene.out (GRCP/GLCP) ----------------------------------------------
@@ -205,15 +218,18 @@ read_gene <- function(path) {
       GLCP   = map_dbl(fields, ~ suppressWarnings(as.numeric(.x[length(.x)])))
     ) %>%
     filter(!is.na(GLCP)) %>%
-    transmute(source_trait, gene = gene_of(gene), GRCP, GLCP) %>%
+    transmute(source_trait = as.character(source_trait),
+              gene = as.character(gene_of(gene)),
+              GRCP = as.numeric(GRCP), GLCP = as.numeric(GLCP)) %>%
     distinct(source_trait, gene, .keep_all = TRUE)
 }
 
 # ---- 3. CLPP pairs ---------------------------------------------------------
 read_clpp <- function(path) {
   read_any(path) %>%
-    transmute(source_trait = trait_of_gwas_cs(gwas_cs),
-              gwas_cs, qtl_sig,
+    transmute(source_trait = as.character(trait_of_gwas_cs(gwas_cs)),
+              gwas_cs = as.character(gwas_cs),
+              qtl_sig = as.character(qtl_sig),
               n_shared = as.integer(n_shared),
               CLPP = as.numeric(CLPP))
 }
@@ -249,8 +265,10 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA,
   if (!is.null(clpp)) {
     out <- full_join(out, clpp, by = c("gwas_cs", "qtl_sig")) %>%
       mutate(
-        source_trait = coalesce(source_trait.x, source_trait.y, trait_of_gwas_cs(gwas_cs)),
-        gene = coalesce(gene, gene_of(qtl_sig))
+        source_trait = coalesce(as.character(source_trait.x),
+                                as.character(source_trait.y),
+                                as.character(trait_of_gwas_cs(gwas_cs))),
+        gene = coalesce(as.character(gene), as.character(gene_of(qtl_sig)))
       ) %>%
       select(-source_trait.x, -source_trait.y)
   } else {
@@ -341,7 +359,7 @@ rollup_cs <- function(signal_tbl, all_cs = NULL, consensus = NULL,
       genes_CLPP_0.01 = paste(sort(unique(gene[CLPP >= 0.01 & !is.na(CLPP)])), collapse = ";"),
       genes_RCP_FDR   = paste(sort(unique(gene[RCP_pass_FDR])),  collapse = ";"),
       genes_GLCP_FDR  = paste(sort(unique(gene[GLCP_pass_FDR])), collapse = ";"),
-      top_gene        = gene[which.max(replace_na(RCP, -1))],
+      top_gene        = top_value_by_score(gene, RCP),
       .groups = "drop"
     )
   # add non-colocalizing credible sets (present in GWAS, absent from signals)
@@ -412,8 +430,23 @@ rollup_cs <- function(signal_tbl, all_cs = NULL, consensus = NULL,
 rollup_gene <- function(signal_tbl, study = NA, trait = NA,
                         trait_category = NA, n_variants = NA_integer_,
                         n_credible_sets = NA_integer_, layer = NA) {
+  signal_tbl <- signal_tbl %>%
+    filter(!is.na(gene))
+  if (nrow(signal_tbl) == 0) {
+    return(tibble(
+      study = character(), trait = character(), trait_category = character(),
+      n_variants = integer(), n_credible_sets = integer(), layer = character(),
+      gene = character(), n_gene_credible_sets = integer(),
+      n_signals = integer(), best_RCP = numeric(), best_CLPP = numeric(),
+      GRCP = numeric(), GLCP = numeric(), coloc_RCP_0.5 = logical(),
+      coloc_CLPP_0.05 = logical(), coloc_CLPP_0.01 = logical(),
+      RCP_pass_FDR = logical(), GRCP_pass_FDR = logical(),
+      GLCP_pass_FDR = logical(), any_coloc = logical(),
+      top_cs = character()
+    ))
+  }
+
   signal_tbl %>%
-    filter(!is.na(gene)) %>%
     group_by(study, trait, trait_category, n_variants, n_credible_sets,
              layer, gene) %>%
     summarise(
@@ -429,7 +462,7 @@ rollup_gene <- function(signal_tbl, study = NA, trait = NA,
       RCP_pass_FDR    = any(RCP_pass_FDR,  na.rm = TRUE),
       GRCP_pass_FDR   = first(GRCP_pass_FDR),
       GLCP_pass_FDR   = first(GLCP_pass_FDR),
-      top_cs          = gwas_cs[which.max(replace_na(RCP, -1))],
+      top_cs          = top_value_by_score(gwas_cs, RCP),
       .groups = "drop"
     ) %>%
     mutate(
