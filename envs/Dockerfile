@@ -13,6 +13,9 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
     conda-forge::r-bedr \
     conda-forge::r-readxl \
     bioconda::htslib \
+    conda-forge::google-cloud-sdk \
+    conda-forge::curl \
+    conda-forge::gzip \
     conda-forge::git \
     conda-forge::make \
     conda-forge::gcc \

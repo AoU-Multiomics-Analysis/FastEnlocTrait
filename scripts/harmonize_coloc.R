@@ -37,7 +37,10 @@
 #           --clpp pairs.tsv.gz --gwas GWAS.vcf.gz \
 #           --out harmonized.tsv.gz \
 #           --cs_out harmonized.cs.tsv.gz --gene_out harmonized.gene.tsv.gz \
-#           [--study GCST... --trait "Rheumatoid arthritis" --layer eQTL \
+#           [--study GCST... --trait "Rheumatoid arthritis" \
+#            --trait_category immune --n_variants 1000000 \
+#            --n_credible_sets 250 --layer eQTL \
+#            --consensus_map consensus_loci.tsv.gz \
 #            --fdr_level 0.05]
 #
 # Inputs: FastENLOC .sig.out (RCP/LCP) + .gene.out (GRCP/GLCP), and optionally
@@ -71,6 +74,12 @@ build_option_parser <- function() {
                   help = "Study id to stamp on every row [optional]"),
       make_option("--trait", type = "character", default = NA,
                   help = "Trait label to stamp on every row [optional]"),
+      make_option("--trait_category", type = "character", default = NA,
+                  help = "Trait category to stamp on every row [optional]"),
+      make_option("--n_variants", type = "integer", default = NA,
+                  help = "GWAS variant count denominator to stamp on every row [optional]"),
+      make_option("--n_credible_sets", type = "integer", default = NA,
+                  help = "Total GWAS credible-set denominator to stamp on every row [optional]"),
       make_option("--layer", type = "character", default = NA,
                   help = "QTL layer label (eQTL/sQTL/pQTL) [optional]"),
       make_option("--fdr_level", type = "double", default = 0.05,
@@ -83,7 +92,13 @@ build_option_parser <- function() {
                                "(one row per gwas_cs) to this path [optional]")),
       make_option("--gene_out", type = "character", default = NULL,
                   help = paste("If set, also write a gene-level rollup",
-                               "(one row per gene) to this path [optional]"))
+                               "(one row per gene) to this path [optional]")),
+      make_option("--consensus_map", type = "character", default = NULL,
+                  help = paste("Consensus-locus map from merge_credible_sets.R",
+                               "(tsv/csv +.gz). If set, the CS rollup gains",
+                               "consensus_locus_id and merge metadata so",
+                               "coverage can be de-duplicated across studies",
+                               "[optional]"))
     )
   )
 }
@@ -125,6 +140,14 @@ metadata_value <- function(x) {
     NA_character_
   } else {
     as.character(x)
+  }
+}
+
+metadata_int <- function(x) {
+  if (length(x) == 0 || is.null(x) || is.na(x) || as.character(x) == "") {
+    NA_integer_
+  } else {
+    as.integer(x)
   }
 }
 
@@ -195,8 +218,22 @@ read_clpp <- function(path) {
               CLPP = as.numeric(CLPP))
 }
 
+# ---- consensus-locus map (from merge_credible_sets.R) ----------------------
+read_consensus <- function(path) {
+  read_any(path) %>%
+    transmute(study_id = as.character(study_id),
+              gwas_cs = as.character(gwas_cs),
+              consensus_locus_id = as.character(consensus_locus_id),
+              n_studies_in_locus = as.integer(n_studies_in_locus),
+              n_cs_in_locus = as.integer(n_cs_in_locus),
+              is_merged = as.logical(is_merged)) %>%
+    distinct(study_id, gwas_cs, .keep_all = TRUE)
+}
+
 # ---- harmonize -------------------------------------------------------------
-harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA, layer = NA,
+harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA,
+                      trait_category = NA, n_variants = NA_integer_,
+                      n_credible_sets = NA_integer_, layer = NA,
                       fdr_level = 0.05) {
   # FDR thresholds computed at each metric's NATIVE granularity over the full
   # source set: RCP over all mapped signals in sig.out; GRCP/GLCP over all
@@ -232,6 +269,9 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA, layer = NA
   }
   study_value <- metadata_value(study)
   trait_value <- metadata_value(trait)
+  trait_category_value <- metadata_value(trait_category)
+  n_variants_value <- metadata_int(n_variants)
+  n_credible_sets_value <- metadata_int(n_credible_sets)
   layer_value <- metadata_value(layer)
 
   out %>%
@@ -239,12 +279,16 @@ harmonize <- function(sig, gene, clpp = NULL, study = NA, trait = NA, layer = NA
     mutate(
       study = study_value,
       trait = if (is.na(trait_value)) source_trait else trait_value,
+      trait_category = trait_category_value,
+      n_variants = n_variants_value,
+      n_credible_sets = n_credible_sets_value,
       layer = layer_value,
       RCP_pass_FDR  = !is.na(RCP)  & RCP  >= rcp_thr,
       GRCP_pass_FDR = !is.na(GRCP) & GRCP >= grcp_thr,
       GLCP_pass_FDR = !is.na(GLCP) & GLCP >= glcp_thr
     ) %>%
-    select(study, trait, layer, gwas_cs, qtl_sig, gene,
+    select(study, trait, trait_category, n_variants, n_credible_sets,
+           layer, gwas_cs, qtl_sig, gene,
            RCP, LCP, CLPP, n_shared, GRCP, GLCP,
            RCP_pass_FDR, GRCP_pass_FDR, GLCP_pass_FDR) %>%
     arrange(desc(coalesce(RCP, 0)), desc(coalesce(CLPP, 0)))
@@ -266,14 +310,20 @@ all_gwas_cs <- function(path) {
 # collapse the signal-level table to ONE row per credible set, so credible
 # sets can be counted directly. `all_cs` (optional) supplies the full set of
 # credible sets so non-colocalizing ones appear with 0/FALSE.
-rollup_cs <- function(signal_tbl, all_cs = NULL,
-                      study = NA, trait = NA, layer = NA) {
+rollup_cs <- function(signal_tbl, all_cs = NULL, consensus = NULL,
+                      study = NA, trait = NA, trait_category = NA,
+                      n_variants = NA_integer_,
+                      n_credible_sets = NA_integer_, layer = NA) {
   study_value <- metadata_value(study)
   trait_value <- metadata_value(trait)
+  trait_category_value <- metadata_value(trait_category)
+  n_variants_value <- metadata_int(n_variants)
+  n_credible_sets_value <- metadata_int(n_credible_sets)
   layer_value <- metadata_value(layer)
 
   cs <- signal_tbl %>%
-    group_by(study, trait, layer, gwas_cs) %>%
+    group_by(study, trait, trait_category, n_variants, n_credible_sets,
+             layer, gwas_cs) %>%
     summarise(
       n_qtl_signals   = sum(!is.na(qtl_sig)),
       n_genes         = n_distinct(gene[!is.na(gene)]),
@@ -301,6 +351,9 @@ rollup_cs <- function(signal_tbl, all_cs = NULL,
       cs <- bind_rows(cs, missing %>% mutate(
         study = study_value,
         trait = if (is.na(trait_value)) trait else trait_value,
+        trait_category = trait_category_value,
+        n_variants = n_variants_value,
+        n_credible_sets = n_credible_sets_value,
         layer = layer_value,
         n_qtl_signals = 0L, n_genes = 0L,
         best_RCP = NA_real_, best_CLPP = NA_real_, best_GLCP = NA_real_,
@@ -310,19 +363,44 @@ rollup_cs <- function(signal_tbl, all_cs = NULL,
         genes_RCP_FDR = "", genes_GLCP_FDR = "", top_gene = NA_character_))
     }
   }
-  cs %>%
+  cs <- cs %>%
     mutate(
       # any_coloc = union of the STRINGENT metrics only. CLPP>=0.01 is a lenient
       # screening threshold and is deliberately EXCLUDED here (it is still
       # reported in its own coloc_CLPP_0.01 column).
       any_coloc = coloc_RCP_0.5 | coloc_CLPP_0.05 | coloc_RCP_FDR | coloc_GLCP_FDR
-    ) %>%
-    select(study, trait, layer, gwas_cs, n_qtl_signals, n_genes,
-           best_RCP, best_CLPP, best_GLCP,
-           coloc_RCP_0.5, coloc_CLPP_0.05, coloc_CLPP_0.01,
-           coloc_RCP_FDR, coloc_GLCP_FDR, any_coloc,
-           genes_RCP_0.5, genes_CLPP_0.05, genes_CLPP_0.01,
-           genes_RCP_FDR, genes_GLCP_FDR, top_gene) %>%
+    )
+
+  if (!is.null(consensus)) {
+    cs <- cs %>%
+      left_join(consensus, by = c("study" = "study_id", "gwas_cs")) %>%
+      mutate(
+        consensus_locus_id = coalesce(consensus_locus_id, gwas_cs),
+        n_studies_in_locus = coalesce(n_studies_in_locus, 1L),
+        n_cs_in_locus = coalesce(n_cs_in_locus, 1L),
+        is_merged = coalesce(is_merged, FALSE)
+      ) %>%
+      select(study, trait, trait_category, n_variants, n_credible_sets,
+             layer, gwas_cs, consensus_locus_id,
+             n_studies_in_locus, n_cs_in_locus, is_merged,
+             n_qtl_signals, n_genes,
+             best_RCP, best_CLPP, best_GLCP,
+             coloc_RCP_0.5, coloc_CLPP_0.05, coloc_CLPP_0.01,
+             coloc_RCP_FDR, coloc_GLCP_FDR, any_coloc,
+             genes_RCP_0.5, genes_CLPP_0.05, genes_CLPP_0.01,
+             genes_RCP_FDR, genes_GLCP_FDR, top_gene)
+  } else {
+    cs <- cs %>%
+      select(study, trait, trait_category, n_variants, n_credible_sets,
+             layer, gwas_cs, n_qtl_signals, n_genes,
+             best_RCP, best_CLPP, best_GLCP,
+             coloc_RCP_0.5, coloc_CLPP_0.05, coloc_CLPP_0.01,
+             coloc_RCP_FDR, coloc_GLCP_FDR, any_coloc,
+             genes_RCP_0.5, genes_CLPP_0.05, genes_CLPP_0.01,
+             genes_RCP_FDR, genes_GLCP_FDR, top_gene)
+  }
+
+  cs %>%
     arrange(desc(any_coloc), desc(replace_na(best_RCP, -1)))
 }
 
@@ -331,12 +409,15 @@ rollup_cs <- function(signal_tbl, all_cs = NULL,
 # gene-native (one value per gene, constant across that gene's rows); RCP/CLPP
 # are aggregated as the best signal for the gene, with a count of how many
 # distinct credible sets the gene colocalizes with.
-rollup_gene <- function(signal_tbl, study = NA, trait = NA, layer = NA) {
+rollup_gene <- function(signal_tbl, study = NA, trait = NA,
+                        trait_category = NA, n_variants = NA_integer_,
+                        n_credible_sets = NA_integer_, layer = NA) {
   signal_tbl %>%
     filter(!is.na(gene)) %>%
-    group_by(study, trait, layer, gene) %>%
+    group_by(study, trait, trait_category, n_variants, n_credible_sets,
+             layer, gene) %>%
     summarise(
-      n_credible_sets = n_distinct(gwas_cs[!is.na(gwas_cs)]),
+      n_gene_credible_sets = n_distinct(gwas_cs[!is.na(gwas_cs)]),
       n_signals       = sum(!is.na(qtl_sig)),
       best_RCP        = if (all(is.na(RCP)))  NA_real_ else max(RCP,  na.rm = TRUE),
       best_CLPP       = if (all(is.na(CLPP))) NA_real_ else max(CLPP, na.rm = TRUE),
@@ -355,7 +436,8 @@ rollup_gene <- function(signal_tbl, study = NA, trait = NA, layer = NA) {
       # union of stringent metrics (CLPP>=0.01 screening threshold excluded)
       any_coloc = coloc_RCP_0.5 | coloc_CLPP_0.05 | RCP_pass_FDR | GLCP_pass_FDR
     ) %>%
-    select(study, trait, layer, gene, n_credible_sets, n_signals,
+    select(study, trait, trait_category, n_variants, n_credible_sets,
+           layer, gene, n_gene_credible_sets, n_signals,
            best_RCP, best_CLPP, GRCP, GLCP,
            coloc_RCP_0.5, coloc_CLPP_0.05, coloc_CLPP_0.01,
            RCP_pass_FDR, GRCP_pass_FDR, GLCP_pass_FDR, any_coloc, top_cs) %>%
@@ -372,7 +454,18 @@ main <- function() {
   sig  <- read_sig(a$sig)
   gene <- read_gene(a$gene)
   clpp <- if (!is.null(a$clpp)) read_clpp(a$clpp) else NULL
-  res  <- harmonize(sig, gene, clpp, a$study, a$trait, a$layer, a$fdr_level)
+  res  <- harmonize(
+    sig = sig,
+    gene = gene,
+    clpp = clpp,
+    study = a$study,
+    trait = a$trait,
+    trait_category = a$trait_category,
+    n_variants = a$n_variants,
+    n_credible_sets = a$n_credible_sets,
+    layer = a$layer,
+    fdr_level = a$fdr_level
+  )
   write_tsv(res, a$out)
   message("Harmonized ", nrow(res), " signal rows -> ", a$out,
           "  (", n_distinct(res$gwas_cs), " credible sets, ",
@@ -381,7 +474,18 @@ main <- function() {
   # optional credible-set-level rollup
   if (!is.null(a$cs_out)) {
     all_cs <- if (!is.null(a$gwas)) all_gwas_cs(a$gwas) else NULL
-    cs <- rollup_cs(res, all_cs, a$study, a$trait, a$layer)
+    consensus <- if (!is.null(a$consensus_map)) read_consensus(a$consensus_map) else NULL
+    cs <- rollup_cs(
+      signal_tbl = res,
+      all_cs = all_cs,
+      consensus = consensus,
+      study = a$study,
+      trait = a$trait,
+      trait_category = a$trait_category,
+      n_variants = a$n_variants,
+      n_credible_sets = a$n_credible_sets,
+      layer = a$layer
+    )
     write_tsv(cs, a$cs_out)
     n_total <- nrow(cs)
     n_any   <- sum(cs$any_coloc)
@@ -389,11 +493,26 @@ main <- function() {
             if (is.null(all_cs)) "  (colocalizing CS only; pass --gwas for full denominator)"
             else sprintf("  (%d/%d = %.1f%% colocalize by any metric)",
                          n_any, n_total, 100 * n_any / n_total))
+    if (!is.null(consensus)) {
+      loci <- cs %>%
+        group_by(consensus_locus_id) %>%
+        summarise(coloc = any(any_coloc), .groups = "drop")
+      message(sprintf("  consensus loci: %d/%d = %.1f%% colocalize",
+                      sum(loci$coloc), nrow(loci), 100 * mean(loci$coloc)))
+    }
   }
 
   # optional gene-level rollup
   if (!is.null(a$gene_out)) {
-    gtbl <- rollup_gene(res, a$study, a$trait, a$layer)
+    gtbl <- rollup_gene(
+      signal_tbl = res,
+      study = a$study,
+      trait = a$trait,
+      trait_category = a$trait_category,
+      n_variants = a$n_variants,
+      n_credible_sets = a$n_credible_sets,
+      layer = a$layer
+    )
     write_tsv(gtbl, a$gene_out)
     message("Rolled up to ", nrow(gtbl), " genes -> ", a$gene_out,
             sprintf("  (%d colocalize by any metric)", sum(gtbl$any_coloc)))

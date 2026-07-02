@@ -1,14 +1,16 @@
 # FastEnlocTrait
 
-FastEnlocTrait is a WDL workflow for running colocalization for one GWAS analysis unit against one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, and harmonizes both metrics into tidy downstream tables.
+FastEnlocTrait is a WDL workflow for running colocalization across one or more GWAS analysis units and one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, merges GWAS credible sets into trait-level consensus loci, and harmonizes the coloc metrics into tidy downstream tables.
 
 ## What the Workflow Does
 
-1. Splits a GWAS fastENLOC input into manageable chunks.
-2. Runs fastENLOC for each trait chunk against each QTL input layer.
-3. Computes CLPP for the same GWAS/QTL input pairs.
-4. Aggregates per-trait and per-QTL outputs.
-5. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels.
+1. Validates a GWAS manifest and QTL layer labels.
+2. Localizes each manifest `gwas_path` inside the job.
+3. Merges GWAS credible sets across studies of the same trait into consensus loci.
+4. Splits each localized GWAS input into manageable chunks.
+5. Runs fastENLOC and CLPP for each GWAS/QTL pair.
+6. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
+7. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
 
 The main workflow is:
 
@@ -24,36 +26,45 @@ RunFastenloc
 
 ## Quick Start
 
-Use parallel arrays for QTL files and labels:
+Provide a GWAS manifest plus parallel arrays for QTL files and labels:
 
 ```json
 {
-  "RunFastenloc.GWASData": "MVP.all.fastenloc.vcf.gz",
+  "RunFastenloc.GWASManifest": "gwas_manifest.tsv",
   "RunFastenloc.QTLData": [
     "eqtl.fastenloc.vcf.gz",
     "sqtl.fastenloc.vcf.gz",
     "pqtl.fastenloc.vcf.gz"
   ],
   "RunFastenloc.QTLLabels": ["eQTL", "sQTL", "pQTL"],
-  "RunFastenloc.NumberVariants": 1000000
+  "RunFastenloc.consensus_jaccard": 0.90
 }
+```
+
+The manifest is tab-delimited:
+
+```text
+study_id	trait	n_variants	gwas_path	trait_category	n_credible_sets
+GCST90027158	Alzheimer disease	1000000	gs://bucket/alzheimers.fastenloc.vcf.gz	neuro	245
+FINNGEN_R12_G6_MS	Multiple sclerosis	950000	gs://bucket/ms.fastenloc.vcf.gz	immune	180
 ```
 
 For a single QTL layer, provide one-element `QTLData` and `QTLLabels` arrays.
 
-For GWAS sources with different `NumberVariants` values, run this workflow once per GWAS analysis unit. A future manifest layer can scatter over those units.
+`gwas_path` is localized inside each GWAS job. It can point to `gs://`, HTTP(S), or a path already accessible inside the task runtime. The Docker image includes `gsutil` for Google Cloud Storage paths.
 
 ## Primary Outputs
 
-The workflow emits all-QTL combined outputs plus per-QTL output arrays. The most useful downstream outputs are:
+The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-by-QTL output arrays. The most useful downstream outputs are:
 
 | Output | Description |
 | --- | --- |
+| `consensus_loci_out` | Trait-level consensus map from each original GWAS credible set to `consensus_locus_id`. |
 | `harmonized_signal_out` | Signal-level table joining fastENLOC RCP/LCP, CLPP, and gene-level GRCP/GLCP. |
-| `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags and per-method gene lists. |
+| `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags, per-method gene lists, and `consensus_locus_id` for de-duplicated trait coverage. |
 | `harmonized_gene_out` | Gene-level rollup with best signal metrics and gene-native fastENLOC metrics. |
 
-Raw combined fastENLOC and CLPP outputs include a leading `qtl_label` column. Harmonized outputs store the QTL label in the existing `layer` column.
+Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.
 
 ## Documentation
 
@@ -73,14 +84,17 @@ Raw combined fastENLOC and CLPP outputs include a leading `qtl_label` column. Ha
 │   ├── PrepQTLFinemapping.R
 │   ├── SplitTraitData.R
 │   ├── clpp_fastenloc.R
-│   └── harmonize_coloc.R
+│   ├── harmonize_coloc.R
+│   └── merge_credible_sets.R
 └── workflows/
     ├── tasks/
     │   ├── aggregation.wdl
     │   ├── clpp.wdl
+    │   ├── consensus.wdl
     │   ├── fastenloc.wdl
     │   ├── harmonize.wdl
     │   ├── input_validation.wdl
+    │   ├── localize.wdl
     │   └── split.wdl
     └── RunFastEnlocTraits.wdl
 ```

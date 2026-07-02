@@ -53,7 +53,22 @@ Rscript scripts/clpp_fastenloc.R \
   --min_clpp 0.01
 ```
 
-The WDL runs this script on each split trait chunk and QTL input, then aggregates the resulting TSV files per QTL label and across all QTL labels.
+The WDL runs this script on each split GWAS chunk and QTL input, then aggregates the resulting TSV files per GWAS, per QTL label, and across all manifest rows.
+
+## Merge GWAS Credible Sets
+
+`scripts/merge_credible_sets.R` merges GWAS credible sets across studies of the same trait when their variant-membership Jaccard index meets the threshold:
+
+```bash
+Rscript scripts/merge_credible_sets.R \
+  --manifest localized_gwas_manifest.tsv \
+  --out consensus_loci.tsv.gz \
+  --summary_out consensus_loci.summary.tsv \
+  --jaccard 0.90 \
+  --group_col trait
+```
+
+The manifest passed to this script needs `study_id`, `trait`, and `gwas_path`. In the WDL, this manifest is created after GWAS localization, so `gwas_path` points at job-local files. The output maps each original `study_id`/`gwas_cs` pair to a `consensus_locus_id`.
 
 ## Harmonize fastENLOC and CLPP
 
@@ -65,11 +80,17 @@ Rscript scripts/harmonize_coloc.R \
   --gene combined.enloc.gene.out \
   --clpp clpp.combined.tsv \
   --gwas MVP.all.fastenloc.vcf.gz \
+  --consensus_map consensus_loci.tsv.gz \
   --out harmonized_coloc.signal.tsv.gz \
   --cs_out harmonized_coloc.cs.tsv.gz \
   --gene_out harmonized_coloc.gene.tsv.gz \
   --fdr_level 0.05 \
+  --study GCST90027158 \
+  --trait "Alzheimer disease" \
+  --trait_category neuro \
+  --n_variants 1000000 \
+  --n_credible_sets 245 \
   --layer eQTL
 ```
 
-The WDL runs this after per-QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables.
+The WDL runs this after per-GWAS/QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables. Metadata flags are stamped into every harmonized output row, and credible-set rollups carry `consensus_locus_id` for de-duplicated trait coverage.
