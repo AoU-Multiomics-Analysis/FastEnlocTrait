@@ -7,10 +7,9 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 1. Validates a GWAS manifest and QTL layer labels.
 2. Localizes each manifest `gwas_path` inside the job.
 3. Merges GWAS credible sets across studies of the same trait into consensus loci.
-4. Splits each localized GWAS input into manageable chunks.
-5. Runs fastENLOC and CLPP for each GWAS/QTL pair.
-6. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
-7. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
+4. Runs fastENLOC and CLPP for each GWAS/QTL pair.
+5. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
+6. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
 
 The main workflow is:
 
@@ -51,7 +50,7 @@ FINNGEN_R12_G6_MS	Multiple sclerosis	950000	gs://bucket/ms.fastenloc.vcf.gz	immu
 
 For a single QTL layer, provide one-element `QTLData` and `QTLLabels` arrays.
 
-`gwas_path` is localized inside each GWAS job. It can point to `gs://`, HTTP(S), or a path already accessible inside the task runtime. The Docker image includes `gsutil` for Google Cloud Storage paths.
+`gwas_path` is localized inside each GWAS job. It can point to `gs://`, HTTP(S), or a path already accessible inside the task runtime. The Docker image includes `gsutil` for Google Cloud Storage paths. Each manifest row is expected to point to one trait/study analysis unit.
 
 ## Primary Outputs
 

@@ -23,7 +23,8 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `harmonize.wdl` | `HarmonizeColoc` |
 | `input_validation.wdl` | `ValidateGWASManifest`, `ValidateQTLInputs` |
 | `localize.wdl` | `LocalizeGWASData` |
-| `split.wdl` | `SplitFastenloc` |
+
+`workflows/tasks/split.wdl` is retained as an optional legacy task for pre-splitting multi-trait inputs, but it is not imported by the main workflow.
 
 ## Inputs
 
@@ -33,13 +34,11 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `QTLData` | `Array[File]` | One or more QTL fastENLOC input files, each formatted for `fastenloc -eqtl`. |
 | `QTLLabels` | `Array[String]` | Label for each QTL input, such as `eQTL`, `sQTL`, or `pQTL`. Must have the same length as `QTLData`, be unique, and match `[A-Za-z0-9._-]+`. |
 | `min_clpp` | `Float` | Minimum CLPP value to report. Defaults to `0.01`. |
-| `clpp_output_prefix` | `String` | Prefix for CLPP per-chunk and combined output files. Defaults to `clpp`. |
+| `clpp_output_prefix` | `String` | Prefix for CLPP output files. Defaults to `clpp`. |
 | `consensus_jaccard` | `Float` | Jaccard threshold for merging cross-study GWAS credible sets within a trait. Defaults to `0.90`. |
 | `consensus_output_prefix` | `String` | Prefix for consensus locus map and summary outputs. Defaults to `consensus_loci`. |
 | `harmonized_fdr_level` | `Float` | Bayesian FDR level used for harmonized pass flags. Defaults to `0.05`. |
 | `harmonized_output_prefix` | `String` | Prefix for harmonized signal, credible-set, and gene outputs. Defaults to `harmonized_coloc`. |
-
-`SplitFastenloc` also supports `traits_per_chunk`, which defaults to `25` inside the task.
 
 ## GWAS Manifest
 
@@ -54,7 +53,7 @@ The manifest must contain these columns:
 | `trait_category` | `String` | One of `immune`, `neuro`, `cardiometabolic`, `cancer`, or `anthropometric`. |
 | `n_credible_sets` | `Int` | Total fine-mapped GWAS credible-set denominator for this analysis unit. |
 
-Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories.
+Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories. Each row should point to one trait/study analysis unit.
 
 ## Example Inputs
 
@@ -82,12 +81,11 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 
 1. `LocalizeGWASData` materializes the row's `gwas_path` as a job-local gzip file.
 2. `MergeCredibleSets` builds a localized manifest from those files and merges credible sets within each manifest `trait`.
-3. `SplitFastenloc` splits each localized GWAS file into trait chunks.
-4. The workflow scatters over `QTLData`/`QTLLabels`.
-5. For each GWAS/QTL pair, fastENLOC and CLPP run across all chunks.
-6. Per-GWAS/QTL outputs are aggregated, then harmonized with the consensus map.
-7. Per-GWAS all-QTL outputs are aggregated.
-8. Global all-GWAS/all-QTL outputs are aggregated.
+3. The workflow scatters over `QTLData`/`QTLLabels`.
+4. For each GWAS/QTL pair, fastENLOC and CLPP run directly on the localized GWAS file.
+5. Per-GWAS/QTL outputs are aggregated, then harmonized with the consensus map.
+6. Per-GWAS all-QTL outputs are aggregated.
+7. Global all-GWAS/all-QTL outputs are aggregated.
 
 `MergeCredibleSets` only merges cross-study credible sets within the same trait when their variant-membership Jaccard index is at least `consensus_jaccard`. Same-study credible sets are kept distinct.
 
@@ -149,4 +147,4 @@ The core fastENLOC files are expected to use six tab-delimited columns:
 chromosome  position  variant_id  ref  alt  annotation
 ```
 
-For trait data, the workflow splits the sixth column on `;` and uses the first field as the trait name. For QTL data, annotations can contain multiple records joined by `|`.
+For GWAS data, the sixth column stores the credible-set annotation and should correspond to the manifest row's trait/study analysis unit. For QTL data, annotations can contain multiple records joined by `|`.

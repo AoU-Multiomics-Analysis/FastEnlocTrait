@@ -7,7 +7,6 @@ import "tasks/fastenloc.wdl" as fastenloc
 import "tasks/harmonize.wdl" as harmonize
 import "tasks/input_validation.wdl" as input_validation
 import "tasks/localize.wdl" as localize
-import "tasks/split.wdl" as split
 
 workflow RunFastenloc {
     input {
@@ -58,65 +57,60 @@ workflow RunFastenloc {
         Int n_credible_sets = ValidateGWASManifest.n_credible_sets[gwas_index]
         File localized_gwas_data = LocalizeGWASData.gwas_data[gwas_index]
 
-        call split.SplitFastenloc as SplitFastenloc {
-          input:
-            GWASData = localized_gwas_data
-        }
-
         scatter (qtl_index in range(length(ValidateQTLInputs.labels))) {
             String qtl_label = ValidateQTLInputs.labels[qtl_index]
             File qtl_file = QTLData[qtl_index]
 
-            scatter (chunk in SplitFastenloc.chunk_files) {
-                call fastenloc.FastEnloc as FastEnloc {
-                  input:
-                    GWASData = chunk,
-                    QTLData = qtl_file,
-                    NumberVariants = number_variants
-                }
+            call fastenloc.FastEnloc as FastEnloc {
+              input:
+                GWASData = localized_gwas_data,
+                QTLData = qtl_file,
+                NumberVariants = number_variants,
+                trait = trait,
+                output_prefix = study_id + "." + qtl_label
+            }
 
-                call clpp.CLPPFastEnloc as CLPPFastEnloc {
-                  input:
-                    GWASData = chunk,
-                    QTLData = qtl_file,
-                    min_clpp = min_clpp,
-                    output_prefix = study_id + "." + qtl_label + "." + clpp_output_prefix
-                }
+            call clpp.CLPPFastEnloc as CLPPFastEnloc {
+              input:
+                GWASData = localized_gwas_data,
+                QTLData = qtl_file,
+                min_clpp = min_clpp,
+                output_prefix = study_id + "." + qtl_label + "." + clpp_output_prefix
             }
 
             call aggregation.AggregateFiles as AggregateGene {
               input:
-                files = flatten(FastEnloc.gene_outputs),
+                files = [FastEnloc.gene_output],
                 output_name = study_id + "." + qtl_label + ".combined.enloc.gene.out"
             }
 
             call aggregation.AggregateFiles as AggregateEnrich {
               input:
-                files = flatten(FastEnloc.enrich_outputs),
+                files = [FastEnloc.enrich_output],
                 output_name = study_id + "." + qtl_label + ".combined.enloc.enrich.out"
             }
 
             call aggregation.AggregateFiles as AggregateMI {
               input:
-                files = flatten(FastEnloc.mi_outputs),
+                files = [FastEnloc.mi_output],
                 output_name = study_id + "." + qtl_label + ".combined.enloc.mi.out"
             }
 
             call aggregation.AggregateFiles as AggregateSig {
               input:
-                files = flatten(FastEnloc.sig_outputs),
+                files = [FastEnloc.sig_output],
                 output_name = study_id + "." + qtl_label + ".combined.enloc.sig.out"
             }
 
             call aggregation.AggregateFiles as AggregateSNP {
               input:
-                files = flatten(FastEnloc.snp_outputs),
+                files = [FastEnloc.snp_output],
                 output_name = study_id + "." + qtl_label + ".combined.enloc.snp.out"
             }
 
             call aggregation.AggregateFiles as AggregateCLPP {
               input:
-                files = CLPPFastEnloc.clpp_output,
+                files = [CLPPFastEnloc.clpp_output],
                 output_name = study_id + "." + qtl_label + "." + clpp_output_prefix + ".combined.tsv"
             }
 

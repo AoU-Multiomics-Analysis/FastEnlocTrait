@@ -4,7 +4,7 @@ The workflow image copies all files under `scripts/` into `/home/mambauser`, so 
 
 ## Split Trait Data
 
-`scripts/SplitTraitData.R` splits a multi-trait fastENLOC trait file into chunk files under `chunks/` and writes `chunk_manifest.txt`.
+`scripts/SplitTraitData.R` is retained as an optional utility for older multi-trait fastENLOC trait files. The main `RunFastenloc` workflow does not call this script; current manifest rows are expected to point to one trait/study analysis unit.
 
 ```bash
 Rscript scripts/SplitTraitData.R \
@@ -53,7 +53,7 @@ Rscript scripts/clpp_fastenloc.R \
   --min_clpp 0.01
 ```
 
-The WDL runs this script on each split GWAS chunk and QTL input, then aggregates the resulting TSV files per GWAS, per QTL label, and across all manifest rows.
+The WDL runs this script on each localized GWAS analysis unit and QTL input, then aggregates the resulting TSV files per GWAS, per QTL label, and across all manifest rows.
 
 ## Merge GWAS Credible Sets
 
