@@ -2,7 +2,7 @@ version 1.0
 
 task CLPPFastEnloc {
     input {
-        File TraitData
+        File GWASData
         File QTLData
         Float min_clpp = 0.01
         String output_prefix = "clpp"
@@ -12,7 +12,7 @@ task CLPPFastEnloc {
         set -euo pipefail
         output_name="~{output_prefix}.pairs.tsv"
         Rscript ~/clpp_fastenloc.R \
-          --gwas ~{TraitData} \
+          --gwas ~{GWASData} \
           --qtl ~{QTLData} \
           --out "$output_name" \
           --min_clpp ~{min_clpp}

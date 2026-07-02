@@ -27,7 +27,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 
 | Input | Type | Description |
 | --- | --- | --- |
-| `FastEnlocTraitData` | `File` | Trait/GWAS fastENLOC input. Expected to be tab-delimited with six columns: chromosome, position, variant ID, reference allele, alternate allele, and an annotation/locus string. |
+| `GWASData` | `File` | GWAS fastENLOC input for one analysis unit. Expected to be tab-delimited with six columns: chromosome, position, variant ID, reference allele, alternate allele, and an annotation/locus string. |
 | `QTLData` | `Array[File]` | One or more QTL fastENLOC input files, each formatted for `fastenloc -eqtl`. |
 | `QTLLabels` | `Array[String]` | Label for each QTL input, such as `eQTL`, `sQTL`, or `pQTL`. Must have the same length as `QTLData`, be unique, and match `[A-Za-z0-9._-]+`. |
 | `NumberVariants` | `Int` | Total number of GWAS variants passed to `fastenloc -total_variants`. |
@@ -38,13 +38,15 @@ The primary WDL imports task modules from `workflows/tasks/`:
 
 `NumberVariants` is shared across all QTL layers because it depends on the GWAS/trait variant universe.
 
+Run the workflow once per GWAS analysis unit when different GWAS sources have different `NumberVariants` values. A future manifest layer can scatter over these units without changing the per-unit colocalization tasks.
+
 `SplitFastenloc` also supports `traits_per_chunk`, which defaults to `25` inside the task.
 
 ## Example Inputs
 
 ```json
 {
-  "RunFastenloc.FastEnlocTraitData": "MVP.all.fastenloc.vcf.gz",
+  "RunFastenloc.GWASData": "MVP.all.fastenloc.vcf.gz",
   "RunFastenloc.QTLData": [
     "eqtl.fastenloc.vcf.gz",
     "sqtl.fastenloc.vcf.gz",
@@ -61,7 +63,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 
 ## Workflow Behavior
 
-The workflow splits `FastEnlocTraitData` once, then scatters over `QTLData` and `QTLLabels`. For each QTL layer, it runs fastENLOC and CLPP across all trait chunks, aggregates per-QTL outputs, and harmonizes the per-QTL combined results.
+The workflow splits `GWASData` once, then scatters over `QTLData` and `QTLLabels`. For each QTL layer, it runs fastENLOC and CLPP across all GWAS chunks, aggregates per-QTL outputs, and harmonizes the per-QTL combined results.
 
 After per-QTL processing, the workflow also builds all-QTL combined files:
 

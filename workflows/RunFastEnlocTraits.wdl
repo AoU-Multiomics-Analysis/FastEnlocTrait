@@ -9,7 +9,7 @@ import "tasks/split.wdl" as split
 
 workflow RunFastenloc {
     input {
-        File FastEnlocTraitData
+        File GWASData
         Array[File] QTLData
         Array[String] QTLLabels
         Int  NumberVariants
@@ -21,7 +21,7 @@ workflow RunFastenloc {
 
     call split.SplitFastenloc as SplitFastenloc {
         input:
-            FastEnlocTraitData = FastEnlocTraitData
+            GWASData = GWASData
     }
 
     call input_validation.ValidateQTLInputs as ValidateQTLInputs {
@@ -37,14 +37,14 @@ workflow RunFastenloc {
         scatter (chunk in SplitFastenloc.chunk_files) {
             call fastenloc.FastEnloc as FastEnloc {
               input:
-                TraitData = chunk,
+                GWASData = chunk,
                 QTLData = qtl_file,
                 NumberVariants = NumberVariants
             }
 
             call clpp.CLPPFastEnloc as CLPPFastEnloc {
               input:
-                TraitData = chunk,
+                GWASData = chunk,
                 QTLData = qtl_file,
                 min_clpp = min_clpp,
                 output_prefix = qtl_label + "." + clpp_output_prefix
@@ -92,7 +92,7 @@ workflow RunFastenloc {
             sig_output = AggregateSig.combined,
             gene_enloc_output = AggregateGene.combined,
             clpp_output = AggregateCLPP.combined,
-            gwas_data = FastEnlocTraitData,
+            gwas_data = GWASData,
             fdr_level = harmonized_fdr_level,
             output_prefix = qtl_label + "." + harmonized_output_prefix,
             layer = qtl_label

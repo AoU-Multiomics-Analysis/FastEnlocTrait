@@ -2,7 +2,7 @@ version 1.0
 
 task FastEnloc {
     input {
-        File TraitData
+        File GWASData
         File QTLData
         Int NumberVariants
     }
@@ -22,7 +22,7 @@ task FastEnloc {
 
         close(outfile)
     }
-    " ~{TraitData}
+    " ~{GWASData}
     for f in "traits"/*.txt; do
         trait=$(basename "$f" .txt)
 

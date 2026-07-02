@@ -1,10 +1,10 @@
 # FastEnlocTrait
 
-FastEnlocTrait is a WDL workflow for running colocalization across many GWAS traits and one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, and harmonizes both metrics into tidy downstream tables.
+FastEnlocTrait is a WDL workflow for running colocalization for one GWAS analysis unit against one or more QTL layers, such as eQTL, sQTL, and pQTL. It runs fastENLOC, computes CLPP from the same fastENLOC-format inputs, and harmonizes both metrics into tidy downstream tables.
 
 ## What the Workflow Does
 
-1. Splits a multi-trait GWAS/trait fastENLOC input into manageable trait chunks.
+1. Splits a GWAS fastENLOC input into manageable chunks.
 2. Runs fastENLOC for each trait chunk against each QTL input layer.
 3. Computes CLPP for the same GWAS/QTL input pairs.
 4. Aggregates per-trait and per-QTL outputs.
@@ -28,7 +28,7 @@ Use parallel arrays for QTL files and labels:
 
 ```json
 {
-  "RunFastenloc.FastEnlocTraitData": "MVP.all.fastenloc.vcf.gz",
+  "RunFastenloc.GWASData": "MVP.all.fastenloc.vcf.gz",
   "RunFastenloc.QTLData": [
     "eqtl.fastenloc.vcf.gz",
     "sqtl.fastenloc.vcf.gz",
@@ -40,6 +40,8 @@ Use parallel arrays for QTL files and labels:
 ```
 
 For a single QTL layer, provide one-element `QTLData` and `QTLLabels` arrays.
+
+For GWAS sources with different `NumberVariants` values, run this workflow once per GWAS analysis unit. A future manifest layer can scatter over those units.
 
 ## Primary Outputs
 

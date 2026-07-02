@@ -2,14 +2,14 @@ version 1.0
 
 task SplitFastenloc {
     input {
-        File FastEnlocTraitData
+        File GWASData
         Int traits_per_chunk = 25
     }
 
     command <<<
         set -euo pipefail
         Rscript ~/SplitTraitData.R \
-          --input ~{FastEnlocTraitData} \
+          --input ~{GWASData} \
           --traits-per-chunk ~{traits_per_chunk}
     >>>
 
