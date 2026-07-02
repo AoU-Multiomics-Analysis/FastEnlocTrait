@@ -17,12 +17,11 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | Module | Tasks |
 | --- | --- |
 | `aggregation.wdl` | `AggregateFiles`, `AggregateFilesWithQTLLabel`, `AggregateFilesWithGWASMetadata`, `AggregateGzTsvFiles` |
-| `clpp.wdl` | `CLPPFastEnloc` |
 | `consensus.wdl` | `MergeCredibleSets` |
-| `fastenloc.wdl` | `FastEnloc` |
 | `harmonize.wdl` | `HarmonizeColoc` |
 | `input_validation.wdl` | `ValidateGWASManifest`, `ValidateQTLInputs` |
 | `localize.wdl` | `LocalizeGWASData` |
+| `shard_coloc.wdl` | `CreateGWASShards`, `RunColocShard`, `AggregateHarmonizedByGWAS` |
 | `summarize.wdl` | `SummarizeColoc` |
 
 `workflows/tasks/split.wdl` is retained as an optional legacy task for pre-splitting multi-trait inputs, but it is not imported by the main workflow.
@@ -45,6 +44,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `coloc_rate_output_name` | `String` | Filename for the final trait/layer colocalization-rate summary. Defaults to `coloc_rate_by_trait.tsv`. |
 | `gene_summary_output_name` | `String` | Filename for the final trait/layer gene summary. Defaults to `gene_summary_by_trait.tsv`. |
 | `gene_list_output_name` | `String` | Filename for the final long colocalizing gene table. Defaults to `colocalizing_genes_long.tsv`. |
+| `gwas_units_per_shard` | `Int` | Number of GWAS manifest rows to process in each raw fastENLOC/CLPP shard job. Defaults to `10`. |
 
 ## GWAS Manifest
 
@@ -56,7 +56,7 @@ The manifest must contain these columns:
 | `trait` | `String` | Human-readable trait label stamped into harmonized outputs. |
 | `n_variants` | `Int` | GWAS variant denominator passed to `fastenloc -total_variants`. |
 | `gwas_path` | `String` | URI or in-runtime path to the fastENLOC-format GWAS file. Supports `gs://`, HTTP(S), and local paths visible inside the task. |
-| `trait_category` | `String` | One of `immune`, `neuro`, `cardiometabolic`, `cancer`, or `anthropometric`. |
+| `trait_category` | `String` | Non-empty user-defined grouping label for downstream summaries and figures. |
 | `n_credible_sets` | `Int` | Total fine-mapped GWAS credible-set denominator for this analysis unit. |
 
 Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories. Each row should point to one trait/study analysis unit.
@@ -79,7 +79,8 @@ Each manifest row is localized and analyzed independently, so different studies 
   "RunFastenloc.consensus_output_prefix": "consensus_loci",
   "RunFastenloc.harmonized_fdr_level": 0.05,
   "RunFastenloc.harmonized_output_prefix": "harmonized_coloc",
-  "RunFastenloc.summary_gene_threshold": "any"
+  "RunFastenloc.summary_gene_threshold": "any",
+  "RunFastenloc.gwas_units_per_shard": 10
 }
 ```
 
@@ -89,12 +90,14 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 
 1. `LocalizeGWASData` materializes the row's `gwas_path` as a job-local gzip file.
 2. `MergeCredibleSets` builds a localized manifest from those files and merges credible sets within each manifest `trait`.
-3. The workflow scatters over `QTLData`/`QTLLabels`.
-4. For each GWAS/QTL pair, fastENLOC and CLPP run directly on the localized GWAS file.
-5. Per-GWAS/QTL outputs are aggregated, then harmonized with the consensus map.
-6. Per-GWAS all-QTL outputs are aggregated.
+3. `CreateGWASShards` groups manifest rows into shard index files using `gwas_units_per_shard`.
+4. The workflow scatters over shards; each `RunColocShard` job runs fastENLOC and CLPP for several GWAS rows and every QTL layer, emitting raw outputs separated by `study_id` and `qtl_label`.
+5. The workflow scatters over the resulting flat GWAS x QTL raw outputs and runs `HarmonizeColoc` once per pair with the consensus map.
+6. Per-GWAS all-QTL harmonized outputs are aggregated.
 7. Global all-GWAS/all-QTL outputs are aggregated.
 8. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
+
+The shard step reduces scheduler overhead for fastENLOC/CLPP while preserving the statistical boundary for harmonization. `HarmonizeColoc` still sees one GWAS analysis unit and one QTL layer per invocation, so Bayesian FDR thresholds are not pooled across studies, traits, or QTL layers.
 
 `MergeCredibleSets` only merges cross-study credible sets within the same trait when their variant-membership Jaccard index is at least `consensus_jaccard`. Same-study credible sets are kept distinct.
 
@@ -137,10 +140,14 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 
 ## Per-GWAS/QTL Outputs
 
-These outputs are nested arrays with shape `Array[GWAS][QTL]`.
+These outputs are flat arrays, with one element per GWAS x QTL pair. Use `per_gwas_qtl_gwas_index`, `per_gwas_qtl_qtl_index`, `per_gwas_qtl_study_id`, and `per_gwas_qtl_qtl_label` to map each file back to the manifest row and QTL layer.
 
 | Output | Description |
 | --- | --- |
+| `per_gwas_qtl_gwas_index` | Zero-based GWAS manifest row index for each flat GWAS/QTL output. |
+| `per_gwas_qtl_qtl_index` | Zero-based QTL array index for each flat GWAS/QTL output. |
+| `per_gwas_qtl_study_id` | Manifest `study_id` for each flat GWAS/QTL output. |
+| `per_gwas_qtl_qtl_label` | QTL label for each flat GWAS/QTL output. |
 | `per_gwas_qtl_combined_gene_out` | Per-GWAS/QTL `*.enloc.gene.out` combined files. |
 | `per_gwas_qtl_combined_enrich_out` | Per-GWAS/QTL `*.enloc.enrich.out` combined files. |
 | `per_gwas_qtl_combined_mi_out` | Per-GWAS/QTL `*.enloc.mi.out` combined files. |

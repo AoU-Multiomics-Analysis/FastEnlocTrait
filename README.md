@@ -7,7 +7,7 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 1. Validates a GWAS manifest and QTL layer labels.
 2. Localizes each manifest `gwas_path` inside the job.
 3. Merges GWAS credible sets across studies of the same trait into consensus loci.
-4. Runs fastENLOC and CLPP for each GWAS/QTL pair.
+4. Runs fastENLOC and CLPP for each GWAS/QTL pair in configurable GWAS shards.
 5. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
 6. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
 7. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
@@ -38,6 +38,7 @@ Provide a GWAS manifest plus parallel arrays for QTL files and labels:
     "pqtl.fastenloc.vcf.gz"
   ],
   "RunFastenloc.QTLLabels": ["eQTL", "sQTL", "pQTL"],
+  "RunFastenloc.gwas_units_per_shard": 10,
   "RunFastenloc.consensus_jaccard": 0.90
 }
 ```
@@ -53,6 +54,8 @@ FINNGEN_R12_G6_MS	Multiple sclerosis	950000	gs://bucket/ms.fastenloc.vcf.gz	immu
 For a single QTL layer, provide one-element `QTLData` and `QTLLabels` arrays.
 
 `gwas_path` is localized inside each GWAS job. It can point to `gs://`, HTTP(S), or a path already accessible inside the task runtime. The Docker image includes `gsutil` for Google Cloud Storage paths. Each manifest row is expected to point to one trait/study analysis unit.
+
+`gwas_units_per_shard` controls how many manifest rows are processed by each raw fastENLOC/CLPP shard job. Harmonization still runs separately for each GWAS x QTL pair, so Bayesian FDR thresholds remain per GWAS analysis unit and QTL layer.
 
 ## Primary Outputs
 
@@ -100,6 +103,7 @@ Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns pl
     │   ├── harmonize.wdl
     │   ├── input_validation.wdl
     │   ├── localize.wdl
+    │   ├── shard_coloc.wdl
     │   ├── split.wdl
     │   └── summarize.wdl
     └── RunFastEnlocTraits.wdl

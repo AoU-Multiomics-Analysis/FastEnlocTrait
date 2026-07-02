@@ -1,12 +1,11 @@
 version 1.0
 
 import "tasks/aggregation.wdl" as aggregation
-import "tasks/clpp.wdl" as clpp
 import "tasks/consensus.wdl" as consensus
-import "tasks/fastenloc.wdl" as fastenloc
 import "tasks/harmonize.wdl" as harmonize
 import "tasks/input_validation.wdl" as input_validation
 import "tasks/localize.wdl" as localize
+import "tasks/shard_coloc.wdl" as shard_coloc
 import "tasks/summarize.wdl" as summarize
 
 workflow RunFastenloc {
@@ -25,6 +24,7 @@ workflow RunFastenloc {
         String coloc_rate_output_name = "coloc_rate_by_trait.tsv"
         String gene_summary_output_name = "gene_summary_by_trait.tsv"
         String gene_list_output_name = "colocalizing_genes_long.tsv"
+        Int gwas_units_per_shard = 10
     }
 
     call input_validation.ValidateGWASManifest as ValidateGWASManifest {
@@ -55,153 +55,80 @@ workflow RunFastenloc {
         output_prefix = consensus_output_prefix
     }
 
-    scatter (gwas_index in range(length(ValidateGWASManifest.study_ids))) {
-        String study_id = ValidateGWASManifest.study_ids[gwas_index]
-        String trait = ValidateGWASManifest.traits[gwas_index]
-        Int number_variants = ValidateGWASManifest.n_variants[gwas_index]
-        String trait_category = ValidateGWASManifest.trait_categories[gwas_index]
-        Int n_credible_sets = ValidateGWASManifest.n_credible_sets[gwas_index]
-        File localized_gwas_data = LocalizeGWASData.gwas_data[gwas_index]
+    call shard_coloc.CreateGWASShards as CreateGWASShards {
+      input:
+        gwas_count = length(ValidateGWASManifest.study_ids),
+        gwas_units_per_shard = gwas_units_per_shard
+    }
 
-        scatter (qtl_index in range(length(ValidateQTLInputs.labels))) {
-            String qtl_label = ValidateQTLInputs.labels[qtl_index]
-            File qtl_file = QTLData[qtl_index]
-
-            call fastenloc.FastEnloc as FastEnloc {
-              input:
-                GWASData = localized_gwas_data,
-                QTLData = qtl_file,
-                NumberVariants = number_variants,
-                trait = trait,
-                output_prefix = study_id + "." + qtl_label
-            }
-
-            call clpp.CLPPFastEnloc as CLPPFastEnloc {
-              input:
-                GWASData = localized_gwas_data,
-                QTLData = qtl_file,
-                min_clpp = min_clpp,
-                output_prefix = study_id + "." + qtl_label + "." + clpp_output_prefix
-            }
-
-            call aggregation.AggregateFiles as AggregateGene {
-              input:
-                files = [FastEnloc.gene_output],
-                output_name = study_id + "." + qtl_label + ".combined.enloc.gene.out"
-            }
-
-            call aggregation.AggregateFiles as AggregateEnrich {
-              input:
-                files = [FastEnloc.enrich_output],
-                output_name = study_id + "." + qtl_label + ".combined.enloc.enrich.out"
-            }
-
-            call aggregation.AggregateFiles as AggregateMI {
-              input:
-                files = [FastEnloc.mi_output],
-                output_name = study_id + "." + qtl_label + ".combined.enloc.mi.out"
-            }
-
-            call aggregation.AggregateFiles as AggregateSig {
-              input:
-                files = [FastEnloc.sig_output],
-                output_name = study_id + "." + qtl_label + ".combined.enloc.sig.out"
-            }
-
-            call aggregation.AggregateFiles as AggregateSNP {
-              input:
-                files = [FastEnloc.snp_output],
-                output_name = study_id + "." + qtl_label + ".combined.enloc.snp.out"
-            }
-
-            call aggregation.AggregateFiles as AggregateCLPP {
-              input:
-                files = [CLPPFastEnloc.clpp_output],
-                output_name = study_id + "." + qtl_label + "." + clpp_output_prefix + ".combined.tsv"
-            }
-
-            call harmonize.HarmonizeColoc as HarmonizeColoc {
-              input:
-                sig_output = AggregateSig.combined,
-                gene_enloc_output = AggregateGene.combined,
-                clpp_output = AggregateCLPP.combined,
-                gwas_data = localized_gwas_data,
-                consensus_map = MergeCredibleSets.consensus_map,
-                fdr_level = harmonized_fdr_level,
-                output_prefix = study_id + "." + qtl_label + "." + harmonized_output_prefix,
-                study = study_id,
-                trait = trait,
-                trait_category = trait_category,
-                n_variants = number_variants,
-                n_credible_sets = n_credible_sets,
-                layer = qtl_label
-            }
-        }
-
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASGene {
+    scatter (shard_index in range(length(CreateGWASShards.shard_index_files))) {
+        call shard_coloc.RunColocShard as RunColocShard {
           input:
-            files = AggregateGene.combined,
+            shard_indices = CreateGWASShards.shard_index_files[shard_index],
+            GWASData = LocalizeGWASData.gwas_data,
+            QTLData = QTLData,
+            study_ids = ValidateGWASManifest.study_ids,
+            traits = ValidateGWASManifest.traits,
+            n_variants = ValidateGWASManifest.n_variants_text,
             qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + ".combined.enloc.gene.out"
+            min_clpp = min_clpp,
+            clpp_output_prefix = clpp_output_prefix
         }
+    }
 
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASEnrich {
-          input:
-            files = AggregateEnrich.combined,
-            qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + ".combined.enloc.enrich.out"
-        }
+    Array[Int] pair_gwas_indices = flatten(RunColocShard.pair_gwas_indices)
+    Array[Int] pair_qtl_indices = flatten(RunColocShard.pair_qtl_indices)
+    Array[String] pair_gwas_indices_text = flatten(RunColocShard.pair_gwas_indices_text)
+    Array[String] pair_study_ids = flatten(RunColocShard.pair_study_ids)
+    Array[String] pair_qtl_labels = flatten(RunColocShard.pair_qtl_labels)
+    Array[File] per_pair_gene_outputs = flatten(RunColocShard.pair_gene_outputs)
+    Array[File] per_pair_enrich_outputs = flatten(RunColocShard.pair_enrich_outputs)
+    Array[File] per_pair_mi_outputs = flatten(RunColocShard.pair_mi_outputs)
+    Array[File] per_pair_sig_outputs = flatten(RunColocShard.pair_sig_outputs)
+    Array[File] per_pair_snp_outputs = flatten(RunColocShard.pair_snp_outputs)
+    Array[File] per_pair_clpp_outputs = flatten(RunColocShard.pair_clpp_outputs)
+    Array[File] per_gwas_combined_gene_files = flatten(RunColocShard.per_gwas_combined_gene_outputs)
+    Array[File] per_gwas_combined_enrich_files = flatten(RunColocShard.per_gwas_combined_enrich_outputs)
+    Array[File] per_gwas_combined_mi_files = flatten(RunColocShard.per_gwas_combined_mi_outputs)
+    Array[File] per_gwas_combined_sig_files = flatten(RunColocShard.per_gwas_combined_sig_outputs)
+    Array[File] per_gwas_combined_snp_files = flatten(RunColocShard.per_gwas_combined_snp_outputs)
+    Array[File] per_gwas_combined_clpp_files = flatten(RunColocShard.per_gwas_combined_clpp_outputs)
 
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASMI {
-          input:
-            files = AggregateMI.combined,
-            qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + ".combined.enloc.mi.out"
-        }
+    scatter (pair_index in range(length(pair_gwas_indices))) {
+        Int pair_gwas_index = pair_gwas_indices[pair_index]
+        Int pair_qtl_index = pair_qtl_indices[pair_index]
 
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASSig {
+        call harmonize.HarmonizeColoc as HarmonizeColoc {
           input:
-            files = AggregateSig.combined,
-            qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + ".combined.enloc.sig.out"
+            sig_output = per_pair_sig_outputs[pair_index],
+            gene_enloc_output = per_pair_gene_outputs[pair_index],
+            clpp_output = per_pair_clpp_outputs[pair_index],
+            gwas_data = LocalizeGWASData.gwas_data[pair_gwas_index],
+            consensus_map = MergeCredibleSets.consensus_map,
+            fdr_level = harmonized_fdr_level,
+            output_prefix = ValidateGWASManifest.study_ids[pair_gwas_index] + "." + ValidateQTLInputs.labels[pair_qtl_index] + "." + harmonized_output_prefix,
+            study = ValidateGWASManifest.study_ids[pair_gwas_index],
+            trait = ValidateGWASManifest.traits[pair_gwas_index],
+            trait_category = ValidateGWASManifest.trait_categories[pair_gwas_index],
+            n_variants = ValidateGWASManifest.n_variants[pair_gwas_index],
+            n_credible_sets = ValidateGWASManifest.n_credible_sets[pair_gwas_index],
+            layer = ValidateQTLInputs.labels[pair_qtl_index]
         }
+    }
 
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASSNP {
-          input:
-            files = AggregateSNP.combined,
-            qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + ".combined.enloc.snp.out"
-        }
-
-        call aggregation.AggregateFilesWithQTLLabel as AggregateGWASCLPP {
-          input:
-            files = AggregateCLPP.combined,
-            qtl_labels = ValidateQTLInputs.labels,
-            output_name = study_id + "." + clpp_output_prefix + ".combined.tsv"
-        }
-
-        call aggregation.AggregateGzTsvFiles as AggregateGWASHarmonizedSignal {
-          input:
-            files = HarmonizeColoc.signal_output,
-            output_name = study_id + "." + harmonized_output_prefix + ".signal.tsv.gz"
-        }
-
-        call aggregation.AggregateGzTsvFiles as AggregateGWASHarmonizedCS {
-          input:
-            files = HarmonizeColoc.credible_set_output,
-            output_name = study_id + "." + harmonized_output_prefix + ".cs.tsv.gz"
-        }
-
-        call aggregation.AggregateGzTsvFiles as AggregateGWASHarmonizedGene {
-          input:
-            files = HarmonizeColoc.gene_level_output,
-            output_name = study_id + "." + harmonized_output_prefix + ".gene.tsv.gz"
-        }
+    call shard_coloc.AggregateHarmonizedByGWAS as AggregateHarmonizedByGWAS {
+      input:
+        signal_files = HarmonizeColoc.signal_output,
+        credible_set_files = HarmonizeColoc.credible_set_output,
+        gene_files = HarmonizeColoc.gene_level_output,
+        pair_gwas_indices = pair_gwas_indices_text,
+        study_ids = ValidateGWASManifest.study_ids,
+        output_prefix = harmonized_output_prefix
     }
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllGene {
       input:
-        files = AggregateGWASGene.combined,
+        files = per_gwas_combined_gene_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -212,7 +139,7 @@ workflow RunFastenloc {
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllEnrich {
       input:
-        files = AggregateGWASEnrich.combined,
+        files = per_gwas_combined_enrich_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -223,7 +150,7 @@ workflow RunFastenloc {
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllMI {
       input:
-        files = AggregateGWASMI.combined,
+        files = per_gwas_combined_mi_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -234,7 +161,7 @@ workflow RunFastenloc {
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllSig {
       input:
-        files = AggregateGWASSig.combined,
+        files = per_gwas_combined_sig_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -245,7 +172,7 @@ workflow RunFastenloc {
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllSNP {
       input:
-        files = AggregateGWASSNP.combined,
+        files = per_gwas_combined_snp_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -256,7 +183,7 @@ workflow RunFastenloc {
 
     call aggregation.AggregateFilesWithGWASMetadata as AggregateAllCLPP {
       input:
-        files = AggregateGWASCLPP.combined,
+        files = per_gwas_combined_clpp_files,
         study_ids = ValidateGWASManifest.study_ids,
         traits = ValidateGWASManifest.traits,
         trait_categories = ValidateGWASManifest.trait_categories,
@@ -267,19 +194,19 @@ workflow RunFastenloc {
 
     call aggregation.AggregateGzTsvFiles as AggregateAllHarmonizedSignal {
       input:
-        files = AggregateGWASHarmonizedSignal.combined,
+        files = AggregateHarmonizedByGWAS.signal_outputs,
         output_name = harmonized_output_prefix + ".signal.tsv.gz"
     }
 
     call aggregation.AggregateGzTsvFiles as AggregateAllHarmonizedCS {
       input:
-        files = AggregateGWASHarmonizedCS.combined,
+        files = AggregateHarmonizedByGWAS.credible_set_outputs,
         output_name = harmonized_output_prefix + ".cs.tsv.gz"
     }
 
     call aggregation.AggregateGzTsvFiles as AggregateAllHarmonizedGene {
       input:
-        files = AggregateGWASHarmonizedGene.combined,
+        files = AggregateHarmonizedByGWAS.gene_outputs,
         output_name = harmonized_output_prefix + ".gene.tsv.gz"
     }
 
@@ -311,23 +238,27 @@ workflow RunFastenloc {
       File coloc_rate_by_trait_out = SummarizeColoc.coloc_rate_output
       File gene_summary_by_trait_out = SummarizeColoc.gene_summary_output
       File colocalizing_genes_long_out = SummarizeColoc.gene_list_output
-      Array[File] per_gwas_combined_gene_out = AggregateGWASGene.combined
-      Array[File] per_gwas_combined_enrich_out = AggregateGWASEnrich.combined
-      Array[File] per_gwas_combined_mi_out = AggregateGWASMI.combined
-      Array[File] per_gwas_combined_sig_out = AggregateGWASSig.combined
-      Array[File] per_gwas_combined_snp_out = AggregateGWASSNP.combined
-      Array[File] per_gwas_combined_clpp_out = AggregateGWASCLPP.combined
-      Array[File] per_gwas_harmonized_signal_out = AggregateGWASHarmonizedSignal.combined
-      Array[File] per_gwas_harmonized_credible_set_out = AggregateGWASHarmonizedCS.combined
-      Array[File] per_gwas_harmonized_gene_out = AggregateGWASHarmonizedGene.combined
-      Array[Array[File]] per_gwas_qtl_combined_gene_out = AggregateGene.combined
-      Array[Array[File]] per_gwas_qtl_combined_enrich_out = AggregateEnrich.combined
-      Array[Array[File]] per_gwas_qtl_combined_mi_out = AggregateMI.combined
-      Array[Array[File]] per_gwas_qtl_combined_sig_out = AggregateSig.combined
-      Array[Array[File]] per_gwas_qtl_combined_snp_out = AggregateSNP.combined
-      Array[Array[File]] per_gwas_qtl_combined_clpp_out = AggregateCLPP.combined
-      Array[Array[File]] per_gwas_qtl_harmonized_signal_out = HarmonizeColoc.signal_output
-      Array[Array[File]] per_gwas_qtl_harmonized_credible_set_out = HarmonizeColoc.credible_set_output
-      Array[Array[File]] per_gwas_qtl_harmonized_gene_out = HarmonizeColoc.gene_level_output
+      Array[File] per_gwas_combined_gene_out = per_gwas_combined_gene_files
+      Array[File] per_gwas_combined_enrich_out = per_gwas_combined_enrich_files
+      Array[File] per_gwas_combined_mi_out = per_gwas_combined_mi_files
+      Array[File] per_gwas_combined_sig_out = per_gwas_combined_sig_files
+      Array[File] per_gwas_combined_snp_out = per_gwas_combined_snp_files
+      Array[File] per_gwas_combined_clpp_out = per_gwas_combined_clpp_files
+      Array[File] per_gwas_harmonized_signal_out = AggregateHarmonizedByGWAS.signal_outputs
+      Array[File] per_gwas_harmonized_credible_set_out = AggregateHarmonizedByGWAS.credible_set_outputs
+      Array[File] per_gwas_harmonized_gene_out = AggregateHarmonizedByGWAS.gene_outputs
+      Array[Int] per_gwas_qtl_gwas_index = pair_gwas_indices
+      Array[Int] per_gwas_qtl_qtl_index = pair_qtl_indices
+      Array[String] per_gwas_qtl_study_id = pair_study_ids
+      Array[String] per_gwas_qtl_qtl_label = pair_qtl_labels
+      Array[File] per_gwas_qtl_combined_gene_out = per_pair_gene_outputs
+      Array[File] per_gwas_qtl_combined_enrich_out = per_pair_enrich_outputs
+      Array[File] per_gwas_qtl_combined_mi_out = per_pair_mi_outputs
+      Array[File] per_gwas_qtl_combined_sig_out = per_pair_sig_outputs
+      Array[File] per_gwas_qtl_combined_snp_out = per_pair_snp_outputs
+      Array[File] per_gwas_qtl_combined_clpp_out = per_pair_clpp_outputs
+      Array[File] per_gwas_qtl_harmonized_signal_out = HarmonizeColoc.signal_output
+      Array[File] per_gwas_qtl_harmonized_credible_set_out = HarmonizeColoc.credible_set_output
+      Array[File] per_gwas_qtl_harmonized_gene_out = HarmonizeColoc.gene_level_output
     }
 }

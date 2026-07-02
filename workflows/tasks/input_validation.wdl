@@ -9,7 +9,6 @@ task ValidateGWASManifest {
         set -euo pipefail
         # shellcheck disable=SC2016
         Rscript -e '
-        allowed_categories <- c("immune", "neuro", "cardiometabolic", "cancer", "anthropometric")
         manifest <- read.delim(
           "~{gwas_manifest}",
           header = TRUE,
@@ -44,8 +43,7 @@ task ValidateGWASManifest {
 
         fail_if(is.na(manifest$trait) | manifest$trait == "", "trait cannot be empty")
         fail_if(is.na(manifest$gwas_path) | manifest$gwas_path == "", "gwas_path cannot be empty")
-        fail_if(is.na(manifest$trait_category) | !(manifest$trait_category %in% allowed_categories),
-                "trait_category must be one of: immune, neuro, cardiometabolic, cancer, anthropometric")
+        fail_if(is.na(manifest$trait_category) | manifest$trait_category == "", "trait_category cannot be empty")
         fail_if(!grepl("^[0-9]+$", manifest$n_variants), "n_variants must be a positive integer")
         fail_if(as.integer(manifest$n_variants) < 1, "n_variants must be a positive integer")
         fail_if(!grepl("^[0-9]+$", manifest$n_credible_sets), "n_credible_sets must be a non-negative integer")
