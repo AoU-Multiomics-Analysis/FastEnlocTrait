@@ -21,6 +21,7 @@ workflow RunFastenloc {
         Float harmonized_fdr_level = 0.05
         String harmonized_output_prefix = "harmonized_coloc"
         String summary_gene_threshold = "any"
+        String raw_coloc_summary_prefix = "raw_coloc_summary"
         String coloc_rate_output_name = "coloc_rate_by_trait.tsv"
         String gene_summary_output_name = "gene_summary_by_trait.tsv"
         String gene_list_output_name = "colocalizing_genes_long.tsv"
@@ -192,6 +193,18 @@ workflow RunFastenloc {
         output_name = clpp_output_prefix + ".combined.tsv"
     }
 
+    call summarize.SummarizeRawColocByQTL as SummarizeRawColocByQTL {
+      input:
+        gene_output = AggregateAllGene.combined,
+        enrich_output = AggregateAllEnrich.combined,
+        mi_output = AggregateAllMI.combined,
+        sig_output = AggregateAllSig.combined,
+        snp_output = AggregateAllSNP.combined,
+        clpp_output = AggregateAllCLPP.combined,
+        qtl_labels = ValidateQTLInputs.labels,
+        output_prefix = raw_coloc_summary_prefix
+    }
+
     call aggregation.AggregateGzTsvFiles as AggregateAllHarmonizedSignal {
       input:
         files = AggregateHarmonizedByGWAS.signal_outputs,
@@ -232,6 +245,8 @@ workflow RunFastenloc {
       File combined_sig_out = AggregateAllSig.combined
       File combined_snp_out = AggregateAllSNP.combined
       File combined_clpp_out = AggregateAllCLPP.combined
+      File raw_coloc_summary_out = SummarizeRawColocByQTL.raw_coloc_summary
+      Array[File] per_qtl_raw_coloc_summary_out = SummarizeRawColocByQTL.per_qtl_raw_coloc_summary
       File harmonized_signal_out = AggregateAllHarmonizedSignal.combined
       File harmonized_credible_set_out = AggregateAllHarmonizedCS.combined
       File harmonized_gene_out = AggregateAllHarmonizedGene.combined

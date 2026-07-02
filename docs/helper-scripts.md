@@ -95,6 +95,25 @@ Rscript scripts/harmonize_coloc.R \
 
 The WDL runs this after per-GWAS/QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables. Metadata flags are stamped into every harmonized output row, and credible-set rollups carry `consensus_locus_id` for de-duplicated trait coverage.
 
+## Summarize Raw fastENLOC and CLPP Outputs
+
+`scripts/summarize_raw_coloc.R` summarizes the all-GWAS/all-QTL raw fastENLOC and CLPP combined outputs by QTL label:
+
+```bash
+Rscript scripts/summarize_raw_coloc.R \
+  --gene combined.enloc.gene.out \
+  --enrich combined.enloc.enrich.out \
+  --mi combined.enloc.mi.out \
+  --sig combined.enloc.sig.out \
+  --snp combined.enloc.snp.out \
+  --clpp clpp.combined.tsv \
+  --qtl_labels qtl_labels.txt \
+  --out raw_coloc_summary.all_qtl.tsv \
+  --per_qtl_dir raw_coloc_summary_by_qtl
+```
+
+`qtl_labels.txt` should contain one validated QTL label per line. The all-QTL output has one row per `qtl_label` and raw output family (`fastenloc_gene`, `fastenloc_enrich`, `fastenloc_mi`, `fastenloc_sig`, `fastenloc_snp`, and `clpp`). The per-QTL directory contains one compact TSV per QTL label.
+
 ## Summarize Colocalization
 
 `scripts/summarize_coloc.R` summarizes the all-GWAS/all-QTL harmonized outputs after consensus-locus harmonization:

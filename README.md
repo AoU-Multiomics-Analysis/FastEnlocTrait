@@ -9,8 +9,9 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 3. Merges GWAS credible sets across studies of the same trait into consensus loci.
 4. Runs fastENLOC and CLPP for each GWAS/QTL pair in configurable GWAS shards.
 5. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.
-6. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
-7. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
+6. Summarizes raw fastENLOC and CLPP output families by QTL layer.
+7. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
+8. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
 
 The main workflow is:
 
@@ -64,6 +65,8 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | Output | Description |
 | --- | --- |
 | `consensus_loci_out` | Trait-level consensus map from each original GWAS credible set to `consensus_locus_id`. |
+| `raw_coloc_summary_out` | QTL-layer summary of each raw fastENLOC output family plus CLPP. |
+| `per_qtl_raw_coloc_summary_out` | One raw fastENLOC/CLPP summary TSV per QTL label. |
 | `harmonized_signal_out` | Signal-level table joining fastENLOC RCP/LCP, CLPP, and gene-level GRCP/GLCP. |
 | `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags, per-method gene lists, and `consensus_locus_id` for de-duplicated trait coverage. |
 | `harmonized_gene_out` | Gene-level rollup with best signal metrics and gene-native fastENLOC metrics. |
@@ -93,7 +96,8 @@ Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns pl
 │   ├── clpp_fastenloc.R
 │   ├── harmonize_coloc.R
 │   ├── merge_credible_sets.R
-│   └── summarize_coloc.R
+│   ├── summarize_coloc.R
+│   └── summarize_raw_coloc.R
 └── workflows/
     ├── tasks/
     │   ├── aggregation.wdl

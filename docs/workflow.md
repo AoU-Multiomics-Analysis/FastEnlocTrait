@@ -22,7 +22,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `input_validation.wdl` | `ValidateGWASManifest`, `ValidateQTLInputs` |
 | `localize.wdl` | `LocalizeGWASData` |
 | `shard_coloc.wdl` | `CreateGWASShards`, `RunColocShard`, `AggregateHarmonizedByGWAS` |
-| `summarize.wdl` | `SummarizeColoc` |
+| `summarize.wdl` | `SummarizeRawColocByQTL`, `SummarizeColoc` |
 
 `workflows/tasks/split.wdl` is retained as an optional legacy task for pre-splitting multi-trait inputs, but it is not imported by the main workflow.
 
@@ -41,6 +41,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `harmonized_fdr_level` | `Float` | Bayesian FDR level used for harmonized pass flags. Defaults to `0.05`. |
 | `harmonized_output_prefix` | `String` | Prefix for harmonized signal, credible-set, and gene outputs. Defaults to `harmonized_coloc`. |
 | `summary_gene_threshold` | `String` | Threshold used to define colocalizing genes in the final gene summary. Defaults to `any`; accepted values are `any`, `GLCP_FDR`, `RCP_FDR`, `RCP_0.5`, `CLPP_0.01`, and `CLPP_0.05`. |
+| `raw_coloc_summary_prefix` | `String` | Prefix for the all-QTL raw fastENLOC/CLPP summary output. Defaults to `raw_coloc_summary`. |
 | `coloc_rate_output_name` | `String` | Filename for the final trait/layer colocalization-rate summary. Defaults to `coloc_rate_by_trait.tsv`. |
 | `gene_summary_output_name` | `String` | Filename for the final trait/layer gene summary. Defaults to `gene_summary_by_trait.tsv`. |
 | `gene_list_output_name` | `String` | Filename for the final long colocalizing gene table. Defaults to `colocalizing_genes_long.tsv`. |
@@ -80,6 +81,7 @@ Each manifest row is localized and analyzed independently, so different studies 
   "RunFastenloc.harmonized_fdr_level": 0.05,
   "RunFastenloc.harmonized_output_prefix": "harmonized_coloc",
   "RunFastenloc.summary_gene_threshold": "any",
+  "RunFastenloc.raw_coloc_summary_prefix": "raw_coloc_summary",
   "RunFastenloc.gwas_units_per_shard": 10
 }
 ```
@@ -95,7 +97,8 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 5. The workflow scatters over the resulting flat GWAS x QTL raw outputs and runs `HarmonizeColoc` once per pair with the consensus map.
 6. Per-GWAS all-QTL harmonized outputs are aggregated.
 7. Global all-GWAS/all-QTL outputs are aggregated.
-8. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
+8. `SummarizeRawColocByQTL` consumes the global raw fastENLOC and CLPP outputs to produce one summary table across QTL labels plus one summary file per QTL label.
+9. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
 
 The shard step reduces scheduler overhead for fastENLOC/CLPP while preserving the statistical boundary for harmonization. `HarmonizeColoc` still sees one GWAS analysis unit and one QTL layer per invocation, so Bayesian FDR thresholds are not pooled across studies, traits, or QTL layers.
 
@@ -117,6 +120,8 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 | `combined_sig_out` | All-GWAS/all-QTL combined `*.enloc.sig.out` results. |
 | `combined_snp_out` | All-GWAS/all-QTL combined `*.enloc.snp.out` results. |
 | `combined_clpp_out` | All-GWAS/all-QTL combined CLPP results. Default filename is `clpp.combined.tsv`. |
+| `raw_coloc_summary_out` | All-QTL summary of raw fastENLOC gene, enrich, MI, signal, SNP, and CLPP outputs grouped by `qtl_label`. |
+| `per_qtl_raw_coloc_summary_out` | One raw output summary TSV per QTL label. Each file has one row per raw output family. |
 | `harmonized_signal_out` | All-GWAS/all-QTL signal-level harmonized table. |
 | `harmonized_credible_set_out` | All-GWAS/all-QTL credible-set-level harmonized table. |
 | `harmonized_gene_out` | All-GWAS/all-QTL gene-level harmonized table. |
