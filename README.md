@@ -72,11 +72,13 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags, per-method gene lists, and `consensus_locus_id` for de-duplicated trait coverage. |
 | `harmonized_gene_out` | Gene-level rollup retaining all fastENLOC gene-level rows, with best signal/CLPP metrics joined when available. |
 | `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across consensus loci. |
-| `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
+| `gene_summary_by_trait_out` | Consensus-locus-based trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, and consensus locus. |
 | `high_level_outputs_archive` | Tarball containing the main manifests, consensus files, raw combined outputs, harmonized outputs, and final summary tables. |
 
 Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.
+
+Use `harmonized_gene_out` for complete fastENLOC gene-level evidence, including high-GLCP/GRCP genes without matched signal-level coloc rows. Use `gene_summary_by_trait_out` for downstream coverage-style gene summaries tied to consensus loci.
 
 ## Documentation
 

@@ -129,4 +129,4 @@ Rscript scripts/summarize_coloc.R \
   --gene_threshold any
 ```
 
-The WDL runs this once at the end of the workflow. It produces trait x QTL-layer summaries plus a `union` layer that counts a consensus locus or gene once if it colocalizes in any QTL layer. Coverage rates use `consensus_locus_id` as the denominator, so cross-study GWAS credible sets for the same trait are not double counted.
+The WDL runs this once at the end of the workflow. It produces trait x QTL-layer summaries plus a `union` layer that counts a consensus locus or gene once if it colocalizes in any QTL layer. Coverage rates use `consensus_locus_id` as the denominator, so cross-study GWAS credible sets for the same trait are not double counted. Gene summaries from this script are derived from the credible-set-level gene lists; use `harmonized_coloc.gene.tsv.gz` when you want the complete fastENLOC gene-level table, including high-GLCP/GRCP genes without matched signal-level evidence.

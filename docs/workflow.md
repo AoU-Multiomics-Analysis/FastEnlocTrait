@@ -129,9 +129,11 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 | `harmonized_credible_set_out` | All-GWAS/all-QTL credible-set-level harmonized table. |
 | `harmonized_gene_out` | All-GWAS/all-QTL gene-level harmonized table retaining all fastENLOC gene-level rows, with best signal/CLPP metrics joined when available. |
 | `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across de-duplicated consensus loci. |
-| `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
+| `gene_summary_by_trait_out` | Consensus-locus-based trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, consensus locus, GTF gene type, and protein-coding status. |
 | `high_level_outputs_archive` | Tarball with the main manifests, consensus outputs, raw combined fastENLOC/CLPP outputs, raw summaries, harmonized outputs, and final summary tables. |
+
+`harmonized_gene_out` is the complete gene-level evidence table and can contain high-GLCP/GRCP genes with no matched signal-level credible set. `gene_summary_by_trait_out` and `colocalizing_genes_long_out` are derived from credible-set-level gene lists, so they are the right outputs for consensus-locus-based coverage summaries.
 
 ## Per-GWAS Outputs
 
