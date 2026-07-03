@@ -24,8 +24,9 @@
 #               collapsed), coloc_* flags + per-method gene lists. For counting
 #               colocalizing credible sets and coverage rates. Pass --gwas so
 #               non-colocalizing credible sets are included -> correct denom.
-#   --gene_out  gene level: one row per gene, GRCP/GLCP native + best RCP/CLPP +
-#               how many credible sets the gene colocalizes across.
+#   --gene_out  gene level: one row per gene from the FastENLOC gene table,
+#               plus best RCP/CLPP + how many credible sets the gene
+#               colocalizes across when signal-level evidence exists.
 # All emitted as gzip TSV when the path ends in .gz.
 #
 # NOTE: any_coloc = union of the STRINGENT metrics (RCP>=0.5, CLPP>=0.05,
@@ -460,49 +461,68 @@ rollup_cs <- function(signal_tbl, all_cs = NULL, consensus = NULL,
 }
 
 # ---- gene-level rollup -----------------------------------------------------
-# collapse the signal-level table to ONE row per gene. GRCP/GLCP are already
-# gene-native (one value per gene, constant across that gene's rows); RCP/CLPP
-# are aggregated as the best signal for the gene, with a count of how many
-# distinct credible sets the gene colocalizes with.
-rollup_gene <- function(signal_tbl, study = NA, trait = NA,
+# collapse to ONE row per gene. Use the FastENLOC gene table as the backbone so
+# high-GLCP/GRCP genes are retained even when they have no mapped signal row.
+# RCP/CLPP are joined in as best signal-level evidence when available.
+rollup_gene <- function(signal_tbl, gene_tbl = NULL, study = NA, trait = NA,
                         trait_category = NA, n_variants = NA_integer_,
-                        n_credible_sets = NA_integer_, layer = NA) {
-  signal_tbl <- signal_tbl %>%
-    filter(!is.na(gene))
-  if (nrow(signal_tbl) == 0) {
-    return(tibble(
-      study = character(), trait = character(), trait_category = character(),
-      n_variants = integer(), n_credible_sets = integer(), layer = character(),
-      gene = character(), n_gene_credible_sets = integer(),
-      n_signals = integer(), best_RCP = numeric(), best_CLPP = numeric(),
-      GRCP = numeric(), GLCP = numeric(), coloc_RCP_0.5 = logical(),
-      coloc_CLPP_0.05 = logical(), coloc_CLPP_0.01 = logical(),
-      RCP_pass_FDR = logical(), GRCP_pass_FDR = logical(),
-      GLCP_pass_FDR = logical(), any_coloc = logical(),
-      top_cs = character()
-    ))
-  }
+                        n_credible_sets = NA_integer_, layer = NA,
+                        fdr_level = 0.05) {
+  study_value <- metadata_value(study)
+  trait_value <- metadata_value(trait)
+  trait_category_value <- metadata_value(trait_category)
+  n_variants_value <- metadata_int(n_variants)
+  n_credible_sets_value <- metadata_int(n_credible_sets)
+  layer_value <- metadata_value(layer)
 
-  signal_tbl %>%
-    group_by(study, trait, trait_category, n_variants, n_credible_sets,
-             layer, gene) %>%
+  if (is.null(gene_tbl)) {
+    gene_tbl <- tibble(source_trait = character(), gene = character(),
+                       GRCP = numeric(), GLCP = numeric())
+  }
+  grcp_thr <- bfdr_threshold(gene_tbl$GRCP, fdr_level)
+  glcp_thr <- bfdr_threshold(gene_tbl$GLCP, fdr_level)
+
+  gene_base <- gene_tbl %>%
+    filter(!is.na(gene), gene != "") %>%
+    group_by(gene) %>%
+    summarise(
+      GRCP = max_or_na(GRCP),
+      GLCP = max_or_na(GLCP),
+      .groups = "drop"
+    )
+
+  signal_summary <- signal_tbl %>%
+    filter(!is.na(gene), gene != "") %>%
+    group_by(gene) %>%
     summarise(
       n_gene_credible_sets = n_distinct(gwas_cs[!is.na(gwas_cs)]),
       n_signals       = sum(!is.na(qtl_sig)),
       best_RCP        = if (all(is.na(RCP)))  NA_real_ else max(RCP,  na.rm = TRUE),
       best_CLPP       = if (all(is.na(CLPP))) NA_real_ else max(CLPP, na.rm = TRUE),
-      GRCP            = first(GRCP),   # gene-native: constant within the gene
-      GLCP            = first(GLCP),
       coloc_RCP_0.5   = any(RCP  >= 0.5,  na.rm = TRUE),
       coloc_CLPP_0.05 = any(CLPP >= 0.05, na.rm = TRUE),
       coloc_CLPP_0.01 = any(CLPP >= 0.01, na.rm = TRUE),
       RCP_pass_FDR    = any(RCP_pass_FDR,  na.rm = TRUE),
-      GRCP_pass_FDR   = first(GRCP_pass_FDR),
-      GLCP_pass_FDR   = first(GLCP_pass_FDR),
       top_cs          = top_value_by_score(gwas_cs, RCP),
       .groups = "drop"
-    ) %>%
+    )
+
+  full_join(gene_base, signal_summary, by = "gene") %>%
     mutate(
+      study = study_value,
+      trait = trait_value,
+      trait_category = trait_category_value,
+      n_variants = n_variants_value,
+      n_credible_sets = n_credible_sets_value,
+      layer = layer_value,
+      n_gene_credible_sets = replace_na(n_gene_credible_sets, 0L),
+      n_signals = replace_na(n_signals, 0L),
+      coloc_RCP_0.5 = replace_na(coloc_RCP_0.5, FALSE),
+      coloc_CLPP_0.05 = replace_na(coloc_CLPP_0.05, FALSE),
+      coloc_CLPP_0.01 = replace_na(coloc_CLPP_0.01, FALSE),
+      RCP_pass_FDR = replace_na(RCP_pass_FDR, FALSE),
+      GRCP_pass_FDR = !is.na(GRCP) & GRCP >= grcp_thr,
+      GLCP_pass_FDR = !is.na(GLCP) & GLCP >= glcp_thr,
       # union of stringent metrics (CLPP>=0.01 screening threshold excluded)
       any_coloc = coloc_RCP_0.5 | coloc_CLPP_0.05 | RCP_pass_FDR | GLCP_pass_FDR
     ) %>%
@@ -576,12 +596,14 @@ main <- function() {
   if (!is.null(a$gene_out)) {
     gtbl <- rollup_gene(
       signal_tbl = res,
+      gene_tbl = gene,
       study = a$study,
       trait = a$trait,
       trait_category = a$trait_category,
       n_variants = a$n_variants,
       n_credible_sets = a$n_credible_sets,
-      layer = a$layer
+      layer = a$layer,
+      fdr_level = a$fdr_level
     )
     write_tsv(gtbl, a$gene_out)
     message("Rolled up to ", nrow(gtbl), " genes -> ", a$gene_out,

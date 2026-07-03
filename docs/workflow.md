@@ -22,7 +22,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `input_validation.wdl` | `ValidateGWASManifest`, `ValidateQTLInputs` |
 | `localize.wdl` | `LocalizeGWASData` |
 | `shard_coloc.wdl` | `CreateGWASShards`, `RunColocShard`, `AggregateHarmonizedByGWAS` |
-| `summarize.wdl` | `SummarizeRawColocByQTL`, `SummarizeColoc` |
+| `summarize.wdl` | `SummarizeRawColocByQTL`, `SummarizeColoc`, `CollectHighLevelOutputs` |
 
 `workflows/tasks/split.wdl` is retained as an optional legacy task for pre-splitting multi-trait inputs, but it is not imported by the main workflow.
 
@@ -45,6 +45,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `coloc_rate_output_name` | `String` | Filename for the final trait/layer colocalization-rate summary. Defaults to `coloc_rate_by_trait.tsv`. |
 | `gene_summary_output_name` | `String` | Filename for the final trait/layer gene summary. Defaults to `gene_summary_by_trait.tsv`. |
 | `gene_list_output_name` | `String` | Filename for the final long colocalizing gene table. Defaults to `colocalizing_genes_long.tsv`. |
+| `high_level_outputs_archive_name` | `String` | Filename for the tarball collecting the main analysis-ready outputs. Defaults to `high_level_coloc_outputs.tar.gz`. |
 | `gwas_units_per_shard` | `Int` | Number of GWAS manifest rows to process in each raw fastENLOC/CLPP shard job. Defaults to `10`. |
 
 ## GWAS Manifest
@@ -82,6 +83,7 @@ Each manifest row is localized and analyzed independently, so different studies 
   "RunFastenloc.harmonized_output_prefix": "harmonized_coloc",
   "RunFastenloc.summary_gene_threshold": "any",
   "RunFastenloc.raw_coloc_summary_prefix": "raw_coloc_summary",
+  "RunFastenloc.high_level_outputs_archive_name": "high_level_coloc_outputs.tar.gz",
   "RunFastenloc.gwas_units_per_shard": 10
 }
 ```
@@ -99,12 +101,13 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 7. Global all-GWAS/all-QTL outputs are aggregated.
 8. `SummarizeRawColocByQTL` consumes the global raw fastENLOC and CLPP outputs to produce one summary table across QTL labels plus one summary file per QTL label.
 9. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
+10. `CollectHighLevelOutputs` packages the main manifests, consensus files, raw combined outputs, harmonized outputs, and final summary tables into one tarball.
 
 The shard step reduces scheduler overhead for fastENLOC/CLPP while preserving the statistical boundary for harmonization. `HarmonizeColoc` still sees one GWAS analysis unit and one QTL layer per invocation, so Bayesian FDR thresholds are not pooled across studies, traits, or QTL layers.
 
 `MergeCredibleSets` only merges cross-study credible sets within the same trait when their variant-membership Jaccard index is at least `consensus_jaccard`. Same-study credible sets are kept distinct.
 
-Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepend `study_id`, `gwas_trait`, `trait_category`, `n_variants`, and `n_credible_sets` before `qtl_label`. Harmonized outputs carry GWAS metadata directly, keep the manifest trait in `trait`, and keep the QTL label in `layer`. Credible-set harmonized outputs also carry `consensus_locus_id`, `n_studies_in_locus`, `n_cs_in_locus`, and `is_merged`.
+Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepend `study_id`, `gwas_trait`, `trait_category`, `n_variants`, and `n_credible_sets` before `qtl_label`. Harmonized outputs carry GWAS metadata directly, keep the manifest trait in `trait`, and keep the QTL label in `layer`. Credible-set harmonized outputs also carry `consensus_locus_id`, `n_studies_in_locus`, `n_cs_in_locus`, and `is_merged`. Gene-level harmonized outputs retain every fastENLOC gene-level row and join best signal/CLPP evidence when available.
 
 ## Primary Outputs
 
@@ -124,10 +127,11 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 | `per_qtl_raw_coloc_summary_out` | One raw output summary TSV per QTL label. Each file has one row per raw output family. |
 | `harmonized_signal_out` | All-GWAS/all-QTL signal-level harmonized table. |
 | `harmonized_credible_set_out` | All-GWAS/all-QTL credible-set-level harmonized table. |
-| `harmonized_gene_out` | All-GWAS/all-QTL gene-level harmonized table. |
+| `harmonized_gene_out` | All-GWAS/all-QTL gene-level harmonized table retaining all fastENLOC gene-level rows, with best signal/CLPP metrics joined when available. |
 | `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across de-duplicated consensus loci. |
 | `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, consensus locus, GTF gene type, and protein-coding status. |
+| `high_level_outputs_archive` | Tarball with the main manifests, consensus outputs, raw combined fastENLOC/CLPP outputs, raw summaries, harmonized outputs, and final summary tables. |
 
 ## Per-GWAS Outputs
 

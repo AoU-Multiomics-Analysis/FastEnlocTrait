@@ -93,7 +93,7 @@ Rscript scripts/harmonize_coloc.R \
   --layer eQTL
 ```
 
-The WDL runs this after per-GWAS/QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables. Metadata flags are stamped into every harmonized output row, and credible-set rollups carry `consensus_locus_id` for de-duplicated trait coverage.
+The WDL runs this after per-GWAS/QTL aggregation and emits signal-level, credible-set-level, and gene-level harmonized tables. Metadata flags are stamped into every harmonized output row, and credible-set rollups carry `consensus_locus_id` for de-duplicated trait coverage. The gene-level output keeps every fastENLOC gene-level row, then joins best signal-level RCP and CLPP evidence when a matching signal is available.
 
 ## Summarize Raw fastENLOC and CLPP Outputs
 

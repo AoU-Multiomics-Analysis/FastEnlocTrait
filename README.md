@@ -12,6 +12,7 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 6. Summarizes raw fastENLOC and CLPP output families by QTL layer.
 7. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
 8. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
+9. Packages the main analysis-ready outputs into one archive for easier browsing.
 
 The main workflow is:
 
@@ -69,10 +70,11 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | `per_qtl_raw_coloc_summary_out` | One raw fastENLOC/CLPP summary TSV per QTL label. |
 | `harmonized_signal_out` | Signal-level table joining fastENLOC RCP/LCP, CLPP, and gene-level GRCP/GLCP. |
 | `harmonized_credible_set_out` | Credible-set-level rollup with colocalization flags, per-method gene lists, and `consensus_locus_id` for de-duplicated trait coverage. |
-| `harmonized_gene_out` | Gene-level rollup with best signal metrics and gene-native fastENLOC metrics. |
+| `harmonized_gene_out` | Gene-level rollup retaining all fastENLOC gene-level rows, with best signal/CLPP metrics joined when available. |
 | `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across consensus loci. |
 | `gene_summary_by_trait_out` | Trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, and consensus locus. |
+| `high_level_outputs_archive` | Tarball containing the main manifests, consensus files, raw combined outputs, harmonized outputs, and final summary tables. |
 
 Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.
 

@@ -25,6 +25,7 @@ workflow RunFastenloc {
         String coloc_rate_output_name = "coloc_rate_by_trait.tsv"
         String gene_summary_output_name = "gene_summary_by_trait.tsv"
         String gene_list_output_name = "colocalizing_genes_long.tsv"
+        String high_level_outputs_archive_name = "high_level_coloc_outputs.tar.gz"
         Int gwas_units_per_shard = 10
     }
 
@@ -234,6 +235,29 @@ workflow RunFastenloc {
         gene_threshold = summary_gene_threshold
     }
 
+    call summarize.CollectHighLevelOutputs as CollectHighLevelOutputs {
+      input:
+        normalized_gwas_manifest = ValidateGWASManifest.normalized_manifest,
+        localized_gwas_manifest = MergeCredibleSets.localized_manifest,
+        consensus_loci = MergeCredibleSets.consensus_map,
+        consensus_loci_summary = MergeCredibleSets.consensus_summary,
+        combined_gene = AggregateAllGene.combined,
+        combined_enrich = AggregateAllEnrich.combined,
+        combined_mi = AggregateAllMI.combined,
+        combined_sig = AggregateAllSig.combined,
+        combined_snp = AggregateAllSNP.combined,
+        combined_clpp = AggregateAllCLPP.combined,
+        raw_coloc_summary = SummarizeRawColocByQTL.raw_coloc_summary,
+        per_qtl_raw_coloc_summaries = SummarizeRawColocByQTL.per_qtl_raw_coloc_summary,
+        harmonized_signal = AggregateAllHarmonizedSignal.combined,
+        harmonized_credible_set = AggregateAllHarmonizedCS.combined,
+        harmonized_gene = AggregateAllHarmonizedGene.combined,
+        coloc_rate_by_trait = SummarizeColoc.coloc_rate_output,
+        gene_summary_by_trait = SummarizeColoc.gene_summary_output,
+        colocalizing_genes_long = SummarizeColoc.gene_list_output,
+        archive_name = high_level_outputs_archive_name
+    }
+
     output {
       File normalized_gwas_manifest = ValidateGWASManifest.normalized_manifest
       File localized_gwas_manifest = MergeCredibleSets.localized_manifest
@@ -253,6 +277,7 @@ workflow RunFastenloc {
       File coloc_rate_by_trait_out = SummarizeColoc.coloc_rate_output
       File gene_summary_by_trait_out = SummarizeColoc.gene_summary_output
       File colocalizing_genes_long_out = SummarizeColoc.gene_list_output
+      File high_level_outputs_archive = CollectHighLevelOutputs.high_level_outputs_archive
       Array[File] per_gwas_combined_gene_out = per_gwas_combined_gene_files
       Array[File] per_gwas_combined_enrich_out = per_gwas_combined_enrich_files
       Array[File] per_gwas_combined_mi_out = per_gwas_combined_mi_files
