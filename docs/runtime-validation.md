@@ -34,6 +34,26 @@ Syntax-check all R scripts:
 Rscript -e 'for (f in list.files("scripts", pattern = "[.]R$", full.names = TRUE)) { parse(f); cat("parse OK:", f, "\n") }'
 ```
 
+Run the final summary-plot unit test:
+
+```bash
+Rscript tests/test_plot_coloc_summary.R
+Rscript tests/test_summarize_raw_coloc.R
+```
+
+Run a representative local data smoke test without a WDL engine:
+
+```bash
+scripts/run_local_smoke_test.sh \
+  "/path/to/Open targets fine-mapping" \
+  "/path/to/susie_files" \
+  test_runs/opentargets_smoke \
+  /path/to/fastenloc \
+  /path/to/gencode.annotation.gtf.gz
+```
+
+The runner selects the study with the most credible sets in each trait category, runs all three QTL layers, and preserves intermediate/raw data, logs, harmonized outputs, summaries, figures, and a QC table. It reuses completed pair outputs when rerun against the same output directory.
+
 Check for whitespace issues before committing:
 
 ```bash

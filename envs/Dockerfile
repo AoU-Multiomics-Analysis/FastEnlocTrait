@@ -8,6 +8,7 @@ RUN micromamba install -y -n base -c conda-forge -c bioconda \
     conda-forge::r-tidyverse \
     conda-forge::r-data.table \
     conda-forge::r-optparse \
+    conda-forge::r-ggh4x \
     conda-forge::r-arrow \
     conda-forge::r-r.utils \
     conda-forge::r-bedr \
