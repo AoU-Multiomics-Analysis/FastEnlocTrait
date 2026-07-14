@@ -83,6 +83,7 @@ task PlotColocSummary {
         String plot_data_output_name = "coloc_summary_plot_data.tsv"
         String png_output_name = "coloc_summary.png"
         String pdf_output_name = "coloc_summary.pdf"
+        Int min_coloc_genes = 1
     }
 
     command <<<
@@ -92,7 +93,8 @@ task PlotColocSummary {
           --coloc_rate "~{coloc_rate_output}" \
           --plot_data_out "~{plot_data_output_name}" \
           --png_out "~{png_output_name}" \
-          --pdf_out "~{pdf_output_name}"
+          --pdf_out "~{pdf_output_name}" \
+          --min_coloc_genes ~{min_coloc_genes}
     >>>
 
     output {

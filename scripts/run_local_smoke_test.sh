@@ -23,6 +23,7 @@ outdir=$3
 fastenloc_bin=${4:-fastenloc}
 gtf=${5:-}
 selection_mode=${SELECTION_MODE:-category_max}
+min_coloc_genes=${MIN_COLOC_GENES:-1}
 
 case "$selection_mode" in
   category_max|trait_max|all) ;;
@@ -296,6 +297,7 @@ Rscript "$pipeline_root/scripts/plot_coloc_summary.R" \
   --plot_data_out "$outdir/final_summaries/coloc_summary_plot_data.tsv" \
   --png_out "$outdir/figures/coloc_summary.png" \
   --pdf_out "$outdir/figures/coloc_summary.pdf" \
+  --min_coloc_genes "$min_coloc_genes" \
   >"$outdir/logs/plot_coloc_summary.log" 2>&1
 
 Rscript - "$outdir" <<'RSCRIPT'

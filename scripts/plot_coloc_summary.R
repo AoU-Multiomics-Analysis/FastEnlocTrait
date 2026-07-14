@@ -76,6 +76,8 @@ build_option_parser <- function() {
                   help = "PNG figure [default %default]"),
       make_option("--pdf_out", type = "character", default = "coloc_summary.pdf",
                   help = "PDF figure [default %default]"),
+      make_option("--min_coloc_genes", type = "integer", default = 1L,
+                  help = "Minimum distinct colocalizing genes required to plot a trait [default %default]"),
       make_option("--width", type = "double", default = 10,
                   help = "Figure width in inches [default %default]"),
       make_option("--height", type = "double", default = NA_real_,
@@ -142,9 +144,13 @@ scale_y_reordered <- function(..., sep = "___") {
   scale_y_discrete(..., labels = function(x) gsub(reg, "", x))
 }
 
-build_plot_data <- function(gene, coloc_rate) {
+build_plot_data <- function(gene, coloc_rate, min_coloc_genes = 1L) {
   require_columns(gene, c("gene", "trait", "trait_category", "any_coloc"), "--gene")
   require_columns(coloc_rate, c("trait", "layer", "pct_stringent_union"), "--coloc_rate")
+  if (length(min_coloc_genes) != 1 || is.na(min_coloc_genes) ||
+      min_coloc_genes < 1 || min_coloc_genes != as.integer(min_coloc_genes)) {
+    stop("--min_coloc_genes must be a positive integer.", call. = FALSE)
+  }
 
   gene$any_coloc <- as_logical_flag(gene$any_coloc)
   coloc_counts <- gene %>%
@@ -167,7 +173,13 @@ build_plot_data <- function(gene, coloc_rate) {
     message("Dropped (no union stringent coloc rate): ",
             paste(unique(missing_rate), collapse = ", "))
   }
-  combined %>% filter(!is.na(pct_stringent_union))
+  combined <- combined %>% filter(!is.na(pct_stringent_union))
+  trimmed <- combined %>% filter(count < min_coloc_genes) %>% pull(trait)
+  if (length(trimmed) > 0) {
+    message("Trimmed ", length(trimmed), " trait(s) with fewer than ",
+            min_coloc_genes, " colocalizing genes.")
+  }
+  combined %>% filter(count >= min_coloc_genes)
 }
 
 build_empty_plot <- function() {
@@ -278,7 +290,9 @@ main <- function() {
     stop("--width, --height, and --dpi must be positive.", call. = FALSE)
   }
 
-  combined <- build_plot_data(read_any(a$gene), read_any(a$coloc_rate))
+  combined <- build_plot_data(
+    read_any(a$gene), read_any(a$coloc_rate), min_coloc_genes = a$min_coloc_genes
+  )
   write_tsv(combined %>% arrange(trait_category, desc(count), trait), a$plot_data_out)
 
   height <- if (is.na(a$height)) max(6, 2 + 0.18 * nrow(combined)) else a$height

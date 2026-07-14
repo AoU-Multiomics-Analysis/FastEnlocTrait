@@ -48,6 +48,7 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `coloc_summary_plot_data_name` | `String` | Filename for the trait-level data plotted in the final summary figure. Defaults to `coloc_summary_plot_data.tsv`. |
 | `coloc_summary_png_name` | `String` | Filename for the raster summary figure. Defaults to `coloc_summary.png`. |
 | `coloc_summary_pdf_name` | `String` | Filename for the vector summary figure. Defaults to `coloc_summary.pdf`. |
+| `coloc_summary_min_genes` | `Int` | Minimum number of distinct colocalizing genes required to include a trait in the summary plot. Defaults to `1`. |
 | `high_level_outputs_archive_name` | `String` | Filename for the tarball collecting the main analysis-ready outputs. Defaults to `high_level_coloc_outputs.tar.gz`. |
 | `gwas_units_per_shard` | `Int` | Number of GWAS manifest rows to process in each raw fastENLOC/CLPP shard job. Defaults to `10`. |
 

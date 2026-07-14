@@ -141,7 +141,8 @@ Rscript scripts/plot_coloc_summary.R \
   --coloc_rate coloc_rate_by_trait.tsv \
   --plot_data_out coloc_summary_plot_data.tsv \
   --png_out coloc_summary.png \
-  --pdf_out coloc_summary.pdf
+  --pdf_out coloc_summary.pdf \
+  --min_coloc_genes 10
 ```
 
-The left panel counts distinct `(gene, trait, trait_category)` rows with gene-level `any_coloc == TRUE`, so repeated evidence across studies or QTL layers does not inflate the count. The right panel uses `pct_stringent_union` from the `layer == "union"` row of `coloc_rate_by_trait.tsv`; that rate is based on de-duplicated consensus loci. Traits without a union rate or without any colocalizing gene are not plotted. The script writes the joined plotting data to TSV for auditability and assigns fallback colors to categories not present in its built-in palette.
+The left panel counts distinct `(gene, trait, trait_category)` rows with gene-level `any_coloc == TRUE`, so repeated evidence across studies or QTL layers does not inflate the count. `--min_coloc_genes` trims traits below the requested count (default `1`). The right panel uses `pct_stringent_union` from the `layer == "union"` row of `coloc_rate_by_trait.tsv`; that rate is based on de-duplicated consensus loci. Traits without a union rate or without enough colocalizing genes are not plotted. The script writes the filtered plotting data to TSV for auditability and assigns fallback colors to categories not present in its built-in palette.

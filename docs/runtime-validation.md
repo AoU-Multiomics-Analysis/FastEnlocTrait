@@ -59,12 +59,15 @@ To run one representative study for every distinct trait, set
 study. For each study, the eQTL, sQTL, and pQTL analyses run concurrently.
 
 ```bash
-SELECTION_MODE=trait_max scripts/run_local_smoke_test.sh \
+SELECTION_MODE=trait_max MIN_COLOC_GENES=10 scripts/run_local_smoke_test.sh \
   "/path/to/Open targets fine-mapping" \
   "/path/to/susie_files" \
   test_runs/opentargets_all_traits \
   /path/to/fastenloc
 ```
+
+`MIN_COLOC_GENES` is optional and defaults to `1`; it affects only the final
+plot and its audit TSV, not the underlying analysis or complete summaries.
 
 Check for whitespace issues before committing:
 

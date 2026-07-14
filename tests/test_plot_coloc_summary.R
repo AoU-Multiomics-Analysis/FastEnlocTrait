@@ -26,6 +26,9 @@ stopifnot(!is.na(complete_category_colors(combined$trait_category)[["new_categor
 stopifnot(identical(as_logical_flag(c("TRUE", "0", "yes")), c(TRUE, FALSE, TRUE)))
 stopifnot(identical(as_logical_flag(c(1, 0, NA)), c(TRUE, FALSE, FALSE)))
 stopifnot(nrow(build_plot_data(dplyr::filter(gene, !any_coloc), rate)) == 0)
+stopifnot(identical(build_plot_data(gene, rate, min_coloc_genes = 2L)$trait, "Trait A"))
+stopifnot(nrow(build_plot_data(gene, rate, min_coloc_genes = 3L)) == 0)
+stopifnot(inherits(try(build_plot_data(gene, rate, min_coloc_genes = 0L), silent = TRUE), "try-error"))
 
 png <- tempfile(fileext = ".png")
 multi_trait_category <- dplyr::bind_rows(

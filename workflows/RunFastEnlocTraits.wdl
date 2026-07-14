@@ -28,6 +28,7 @@ workflow RunFastenloc {
         String coloc_summary_plot_data_name = "coloc_summary_plot_data.tsv"
         String coloc_summary_png_name = "coloc_summary.png"
         String coloc_summary_pdf_name = "coloc_summary.pdf"
+        Int coloc_summary_min_genes = 1
         String high_level_outputs_archive_name = "high_level_coloc_outputs.tar.gz"
         Int gwas_units_per_shard = 10
     }
@@ -244,7 +245,8 @@ workflow RunFastenloc {
         coloc_rate_output = SummarizeColoc.coloc_rate_output,
         plot_data_output_name = coloc_summary_plot_data_name,
         png_output_name = coloc_summary_png_name,
-        pdf_output_name = coloc_summary_pdf_name
+        pdf_output_name = coloc_summary_pdf_name,
+        min_coloc_genes = coloc_summary_min_genes
     }
 
     call summarize.CollectHighLevelOutputs as CollectHighLevelOutputs {
