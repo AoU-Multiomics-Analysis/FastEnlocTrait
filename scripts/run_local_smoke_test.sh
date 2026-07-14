@@ -6,9 +6,13 @@ if [[ $# -lt 3 || $# -gt 5 ]]; then
   cat >&2 <<'USAGE'
 Usage: run_local_smoke_test.sh OPEN_TARGETS_ROOT QTL_DIR OUTPUT_DIR [FASTENLOC] [GTF]
 
-Runs one high-credible-set GWAS per trait category against eQTL, sQTL, and
-pQTL, then follows the workflow's CLPP, consensus, harmonization, summary,
-and plotting logic. Existing pair outputs are reused when possible.
+Selects GWAS inputs according to SELECTION_MODE (category_max by default),
+runs them against eQTL, sQTL, and pQTL, then follows the workflow's CLPP,
+consensus, harmonization, summary, and plotting logic. Existing pair outputs
+are reused when possible.
+
+SELECTION_MODE may be category_max, trait_max, or all. The *_max modes keep
+the study with the most credible sets in each category or distinct trait.
 USAGE
   exit 2
 fi
@@ -18,6 +22,15 @@ qtl_dir=$2
 outdir=$3
 fastenloc_bin=${4:-fastenloc}
 gtf=${5:-}
+selection_mode=${SELECTION_MODE:-category_max}
+
+case "$selection_mode" in
+  category_max|trait_max|all) ;;
+  *)
+    echo "Invalid SELECTION_MODE: $selection_mode (expected category_max, trait_max, or all)" >&2
+    exit 2
+    ;;
+esac
 
 pipeline_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 source_manifest="$open_targets_root/manifests/gwas_manifest.tsv"
@@ -50,7 +63,7 @@ fi
 mkdir -p "$outdir"/{inputs,work,raw,clpp,harmonized,combined,raw_summaries,final_summaries,figures,logs}
 selected_manifest="$outdir/inputs/selected_manifest.tsv"
 
-Rscript - "$source_manifest" "$relocation" "$open_targets_root" "$selected_manifest" <<'RSCRIPT'
+Rscript - "$source_manifest" "$relocation" "$open_targets_root" "$selected_manifest" "$selection_mode" <<'RSCRIPT'
 suppressPackageStartupMessages({
   library(data.table)
   library(dplyr)
@@ -62,12 +75,23 @@ paths <- fread(args[[2]]) |>
   as_tibble() |>
   transmute(study_id, local_source_path)
 
-selected <- manifest |>
+selection_mode <- args[[5]]
+ranked <- manifest |>
   mutate(n_credible_sets = as.integer(n_credible_sets),
-         n_variants = as.integer(n_variants)) |>
-  group_by(trait_category) |>
-  slice_max(order_by = n_credible_sets, n = 1, with_ties = FALSE) |>
-  ungroup() |>
+         n_variants = as.integer(n_variants))
+
+selected <- switch(
+  selection_mode,
+  category_max = ranked |>
+    group_by(trait_category) |>
+    slice_max(order_by = n_credible_sets, n = 1, with_ties = FALSE) |>
+    ungroup(),
+  trait_max = ranked |>
+    group_by(trait) |>
+    slice_max(order_by = n_credible_sets, n = 1, with_ties = FALSE) |>
+    ungroup(),
+  all = ranked
+) |>
   left_join(paths, by = "study_id") |>
   mutate(gwas_path = file.path(args[[3]], local_source_path)) |>
   select(study_id, trait, n_variants, gwas_path, trait_category, n_credible_sets) |>
@@ -75,7 +99,10 @@ selected <- manifest |>
 
 stopifnot(nrow(selected) > 0, !anyDuplicated(selected$study_id), all(file.exists(selected$gwas_path)))
 write_tsv(selected, args[[4]])
-message("Selected ", nrow(selected), " studies across ", n_distinct(selected$trait_category), " categories")
+message(
+  "Selected ", nrow(selected), " studies representing ", n_distinct(selected$trait),
+  " traits across ", n_distinct(selected$trait_category), " categories (", selection_mode, ")"
+)
 RSCRIPT
 
 consensus="$outdir/combined/consensus_loci.tsv.gz"
@@ -102,7 +129,9 @@ tail -n +2 "$selected_manifest" | while IFS=$'\t' read -r study_id trait n_varia
       > "$gwas_prepped"
   fi
 
+  pids=()
   for qtl_index in "${!qtl_labels[@]}"; do
+    {
     label=${qtl_labels[$qtl_index]}
     qtl=${qtl_files[$qtl_index]}
     pair_key="${study_key}.${label}"
@@ -163,6 +192,11 @@ tail -n +2 "$selected_manifest" | while IFS=$'\t' read -r study_id trait n_varia
       "$study_id" "$trait" "$trait_category" "$n_variants" "$n_credible_sets" "$label" \
       >> "$outdir/run_manifest.tsv"
     echo "Completed $study_id x $label"
+    } &
+    pids+=("$!")
+  done
+  for pid in "${pids[@]}"; do
+    wait "$pid"
   done
 done
 

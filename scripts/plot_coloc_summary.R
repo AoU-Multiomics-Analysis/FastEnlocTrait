@@ -187,8 +187,11 @@ build_plot <- function(combined) {
   plotdat <- combined %>%
     group_by(trait_category) %>%
     mutate(
-      intensity = if_else(max(count) == min(count), 0.75,
-                          (count - min(count)) / (max(count) - min(count))),
+      intensity = if (max(count) == min(count)) {
+        rep(0.75, n())
+      } else {
+        (count - min(count)) / (max(count) - min(count))
+      },
       intensity = 0.25 + 0.75 * intensity,
       fill_col = make_fill(trait_category, intensity, colors)
     ) %>%

@@ -54,6 +54,18 @@ scripts/run_local_smoke_test.sh \
 
 The runner selects the study with the most credible sets in each trait category, runs all three QTL layers, and preserves intermediate/raw data, logs, harmonized outputs, summaries, figures, and a QC table. It reuses completed pair outputs when rerun against the same output directory.
 
+To run one representative study for every distinct trait, set
+`SELECTION_MODE=trait_max`. Use `SELECTION_MODE=all` to retain every manifest
+study. For each study, the eQTL, sQTL, and pQTL analyses run concurrently.
+
+```bash
+SELECTION_MODE=trait_max scripts/run_local_smoke_test.sh \
+  "/path/to/Open targets fine-mapping" \
+  "/path/to/susie_files" \
+  test_runs/opentargets_all_traits \
+  /path/to/fastenloc
+```
+
 Check for whitespace issues before committing:
 
 ```bash

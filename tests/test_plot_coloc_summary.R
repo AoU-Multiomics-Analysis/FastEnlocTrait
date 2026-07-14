@@ -28,7 +28,11 @@ stopifnot(identical(as_logical_flag(c(1, 0, NA)), c(TRUE, FALSE, FALSE)))
 stopifnot(nrow(build_plot_data(dplyr::filter(gene, !any_coloc), rate)) == 0)
 
 png <- tempfile(fileext = ".png")
-ggplot2::ggsave(png, build_plot(combined), width = 8, height = 6, dpi = 72)
+multi_trait_category <- dplyr::bind_rows(
+  combined,
+  dplyr::mutate(combined[combined$trait == "Trait A", ], trait = "Trait C", count = 1L)
+)
+ggplot2::ggsave(png, build_plot(multi_trait_category), width = 8, height = 6, dpi = 72)
 stopifnot(file.exists(png), file.info(png)$size > 0)
 
 empty_png <- tempfile(fileext = ".png")
