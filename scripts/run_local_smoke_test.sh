@@ -23,7 +23,6 @@ outdir=$3
 fastenloc_bin=${4:-fastenloc}
 gtf=${5:-}
 selection_mode=${SELECTION_MODE:-category_max}
-min_coloc_genes=${MIN_COLOC_GENES:-1}
 
 case "$selection_mode" in
   category_max|trait_max|all) ;;
@@ -291,14 +290,20 @@ Rscript "$pipeline_root/scripts/summarize_coloc.R" \
   --gene_threshold any \
   >"$outdir/logs/summarize_coloc.log" 2>&1
 
-Rscript "$pipeline_root/scripts/plot_coloc_summary.R" \
-  --gene "$outdir/combined/harmonized_coloc.gene.tsv.gz" \
-  --coloc_rate "$outdir/final_summaries/coloc_rate_by_trait.tsv" \
-  --plot_data_out "$outdir/final_summaries/coloc_summary_plot_data.tsv" \
-  --png_out "$outdir/figures/coloc_summary.png" \
-  --pdf_out "$outdir/figures/coloc_summary.pdf" \
-  --min_coloc_genes "$min_coloc_genes" \
-  >"$outdir/logs/plot_coloc_summary.log" 2>&1
+for min_coloc_genes in 1 5 10; do
+  suffix=".min${min_coloc_genes}"
+  if [[ "$min_coloc_genes" -eq 1 ]]; then
+    suffix=""
+  fi
+  Rscript "$pipeline_root/scripts/plot_coloc_summary.R" \
+    --gene "$outdir/combined/harmonized_coloc.gene.tsv.gz" \
+    --coloc_rate "$outdir/final_summaries/coloc_rate_by_trait.tsv" \
+    --plot_data_out "$outdir/final_summaries/coloc_summary_plot_data${suffix}.tsv" \
+    --png_out "$outdir/figures/coloc_summary${suffix}.png" \
+    --pdf_out "$outdir/figures/coloc_summary${suffix}.pdf" \
+    --min_coloc_genes "$min_coloc_genes" \
+    >>"$outdir/logs/plot_coloc_summary.log" 2>&1
+done
 
 Rscript - "$outdir" <<'RSCRIPT'
 suppressPackageStartupMessages({library(data.table); library(dplyr); library(readr)})

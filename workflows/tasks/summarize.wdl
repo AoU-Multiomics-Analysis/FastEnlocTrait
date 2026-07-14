@@ -83,7 +83,6 @@ task PlotColocSummary {
         String plot_data_output_name = "coloc_summary_plot_data.tsv"
         String png_output_name = "coloc_summary.png"
         String pdf_output_name = "coloc_summary.pdf"
-        Int min_coloc_genes = 1
     }
 
     command <<<
@@ -94,13 +93,35 @@ task PlotColocSummary {
           --plot_data_out "~{plot_data_output_name}" \
           --png_out "~{png_output_name}" \
           --pdf_out "~{pdf_output_name}" \
-          --min_coloc_genes ~{min_coloc_genes}
+          --min_coloc_genes 1
+
+        Rscript ~/plot_coloc_summary.R \
+          --gene "~{gene_output}" \
+          --coloc_rate "~{coloc_rate_output}" \
+          --plot_data_out "coloc_summary_plot_data.min5.tsv" \
+          --png_out "coloc_summary.min5.png" \
+          --pdf_out "coloc_summary.min5.pdf" \
+          --min_coloc_genes 5
+
+        Rscript ~/plot_coloc_summary.R \
+          --gene "~{gene_output}" \
+          --coloc_rate "~{coloc_rate_output}" \
+          --plot_data_out "coloc_summary_plot_data.min10.tsv" \
+          --png_out "coloc_summary.min10.png" \
+          --pdf_out "coloc_summary.min10.pdf" \
+          --min_coloc_genes 10
     >>>
 
     output {
         File plot_data = "~{plot_data_output_name}"
         File png = "~{png_output_name}"
         File pdf = "~{pdf_output_name}"
+        File plot_data_min5 = "coloc_summary_plot_data.min5.tsv"
+        File png_min5 = "coloc_summary.min5.png"
+        File pdf_min5 = "coloc_summary.min5.pdf"
+        File plot_data_min10 = "coloc_summary_plot_data.min10.tsv"
+        File png_min10 = "coloc_summary.min10.png"
+        File pdf_min10 = "coloc_summary.min10.pdf"
     }
 
     runtime {
@@ -134,6 +155,12 @@ task CollectHighLevelOutputs {
         File coloc_summary_plot_data
         File coloc_summary_png
         File coloc_summary_pdf
+        File coloc_summary_plot_data_min5
+        File coloc_summary_png_min5
+        File coloc_summary_pdf_min5
+        File coloc_summary_plot_data_min10
+        File coloc_summary_png_min10
+        File coloc_summary_pdf_min10
         String archive_name = "high_level_coloc_outputs.tar.gz"
     }
 
@@ -180,6 +207,12 @@ task CollectHighLevelOutputs {
         cp "~{coloc_summary_plot_data}" "$outdir/final_summaries/coloc_summary_plot_data.tsv"
         cp "~{coloc_summary_png}" "$outdir/figures/coloc_summary.png"
         cp "~{coloc_summary_pdf}" "$outdir/figures/coloc_summary.pdf"
+        cp "~{coloc_summary_plot_data_min5}" "$outdir/final_summaries/coloc_summary_plot_data.min5.tsv"
+        cp "~{coloc_summary_png_min5}" "$outdir/figures/coloc_summary.min5.png"
+        cp "~{coloc_summary_pdf_min5}" "$outdir/figures/coloc_summary.min5.pdf"
+        cp "~{coloc_summary_plot_data_min10}" "$outdir/final_summaries/coloc_summary_plot_data.min10.tsv"
+        cp "~{coloc_summary_png_min10}" "$outdir/figures/coloc_summary.min10.png"
+        cp "~{coloc_summary_pdf_min10}" "$outdir/figures/coloc_summary.min10.pdf"
 
         find "$outdir" -type f | sort > "$outdir/CONTENTS.txt"
         tar -czf "~{archive_name}" "$outdir"

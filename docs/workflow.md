@@ -48,7 +48,6 @@ The primary WDL imports task modules from `workflows/tasks/`:
 | `coloc_summary_plot_data_name` | `String` | Filename for the trait-level data plotted in the final summary figure. Defaults to `coloc_summary_plot_data.tsv`. |
 | `coloc_summary_png_name` | `String` | Filename for the raster summary figure. Defaults to `coloc_summary.png`. |
 | `coloc_summary_pdf_name` | `String` | Filename for the vector summary figure. Defaults to `coloc_summary.pdf`. |
-| `coloc_summary_min_genes` | `Int` | Minimum number of distinct colocalizing genes required to include a trait in the summary plot. Defaults to `1`. |
 | `high_level_outputs_archive_name` | `String` | Filename for the tarball collecting the main analysis-ready outputs. Defaults to `high_level_coloc_outputs.tar.gz`. |
 | `gwas_units_per_shard` | `Int` | Number of GWAS manifest rows to process in each raw fastENLOC/CLPP shard job. Defaults to `10`. |
 
@@ -105,7 +104,7 @@ The workflow first validates the GWAS manifest and QTL labels. It then runs a tw
 7. Global all-GWAS/all-QTL outputs are aggregated.
 8. `SummarizeRawColocByQTL` consumes the global raw fastENLOC and CLPP outputs to produce one summary table across QTL labels plus one summary file per QTL label.
 9. `SummarizeColoc` consumes the global harmonized credible-set and gene outputs plus `GTF` to produce trait x layer and cross-layer union summaries.
-10. `PlotColocSummary` counts distinct `any_coloc` genes across studies and QTL layers, joins the `union` stringent consensus-locus rate, and writes plot data plus PNG/PDF figures.
+10. `PlotColocSummary` counts distinct `any_coloc` genes across studies and QTL layers, joins the `union` stringent consensus-locus rate, and writes plot data plus PNG/PDF figures at minimum gene-count thresholds 1, 5, and 10.
 11. `CollectHighLevelOutputs` packages the main manifests, consensus files, raw combined outputs, harmonized outputs, final summary tables, and figures into one tarball.
 
 The shard step reduces scheduler overhead for fastENLOC/CLPP while preserving the statistical boundary for harmonization. `HarmonizeColoc` still sees one GWAS analysis unit and one QTL layer per invocation, so Bayesian FDR thresholds are not pooled across studies, traits, or QTL layers.
@@ -137,6 +136,8 @@ Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepen
 | `gene_summary_by_trait_out` | Consensus-locus-based trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, consensus locus, GTF gene type, and protein-coding status. |
 | `coloc_summary_plot_data_out` | One row per plotted trait with category, distinct `any_coloc` gene count, and `pct_stringent_union`. |
+| `coloc_summary_plot_data_min5_out`, `coloc_summary_png_min5_out`, `coloc_summary_pdf_min5_out` | Audit data and figures restricted to traits with at least 5 distinct colocalizing genes. |
+| `coloc_summary_plot_data_min10_out`, `coloc_summary_png_min10_out`, `coloc_summary_pdf_min10_out` | Audit data and figures restricted to traits with at least 10 distinct colocalizing genes. |
 | `coloc_summary_png_out` | Final gene-count and stringent coloc-rate figure in PNG format. |
 | `coloc_summary_pdf_out` | Vector PDF version of the final summary figure. |
 | `high_level_outputs_archive` | Tarball with the main manifests, consensus outputs, raw combined fastENLOC/CLPP outputs, raw summaries, harmonized outputs, and final summary tables. |

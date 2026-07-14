@@ -78,6 +78,8 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | `coloc_summary_plot_data_out` | Trait-level data used in the final summary figure. |
 | `coloc_summary_png_out` | Final gene-count and stringent coloc-rate summary figure in PNG format. |
 | `coloc_summary_pdf_out` | Vector PDF version of the final summary figure. |
+| `coloc_summary_*_min5_out` | Plot data, PNG, and PDF restricted to traits with at least 5 colocalizing genes. |
+| `coloc_summary_*_min10_out` | Plot data, PNG, and PDF restricted to traits with at least 10 colocalizing genes. |
 | `high_level_outputs_archive` | Tarball containing the main manifests, consensus files, raw combined outputs, harmonized outputs, and final summary tables. |
 
 Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.

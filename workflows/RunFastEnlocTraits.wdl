@@ -28,7 +28,6 @@ workflow RunFastenloc {
         String coloc_summary_plot_data_name = "coloc_summary_plot_data.tsv"
         String coloc_summary_png_name = "coloc_summary.png"
         String coloc_summary_pdf_name = "coloc_summary.pdf"
-        Int coloc_summary_min_genes = 1
         String high_level_outputs_archive_name = "high_level_coloc_outputs.tar.gz"
         Int gwas_units_per_shard = 10
     }
@@ -245,8 +244,7 @@ workflow RunFastenloc {
         coloc_rate_output = SummarizeColoc.coloc_rate_output,
         plot_data_output_name = coloc_summary_plot_data_name,
         png_output_name = coloc_summary_png_name,
-        pdf_output_name = coloc_summary_pdf_name,
-        min_coloc_genes = coloc_summary_min_genes
+        pdf_output_name = coloc_summary_pdf_name
     }
 
     call summarize.CollectHighLevelOutputs as CollectHighLevelOutputs {
@@ -272,6 +270,12 @@ workflow RunFastenloc {
         coloc_summary_plot_data = PlotColocSummary.plot_data,
         coloc_summary_png = PlotColocSummary.png,
         coloc_summary_pdf = PlotColocSummary.pdf,
+        coloc_summary_plot_data_min5 = PlotColocSummary.plot_data_min5,
+        coloc_summary_png_min5 = PlotColocSummary.png_min5,
+        coloc_summary_pdf_min5 = PlotColocSummary.pdf_min5,
+        coloc_summary_plot_data_min10 = PlotColocSummary.plot_data_min10,
+        coloc_summary_png_min10 = PlotColocSummary.png_min10,
+        coloc_summary_pdf_min10 = PlotColocSummary.pdf_min10,
         archive_name = high_level_outputs_archive_name
     }
 
@@ -297,6 +301,12 @@ workflow RunFastenloc {
       File coloc_summary_plot_data_out = PlotColocSummary.plot_data
       File coloc_summary_png_out = PlotColocSummary.png
       File coloc_summary_pdf_out = PlotColocSummary.pdf
+      File coloc_summary_plot_data_min5_out = PlotColocSummary.plot_data_min5
+      File coloc_summary_png_min5_out = PlotColocSummary.png_min5
+      File coloc_summary_pdf_min5_out = PlotColocSummary.pdf_min5
+      File coloc_summary_plot_data_min10_out = PlotColocSummary.plot_data_min10
+      File coloc_summary_png_min10_out = PlotColocSummary.png_min10
+      File coloc_summary_pdf_min10_out = PlotColocSummary.pdf_min10
       File high_level_outputs_archive = CollectHighLevelOutputs.high_level_outputs_archive
       Array[File] per_gwas_combined_gene_out = per_gwas_combined_gene_files
       Array[File] per_gwas_combined_enrich_out = per_gwas_combined_enrich_files
