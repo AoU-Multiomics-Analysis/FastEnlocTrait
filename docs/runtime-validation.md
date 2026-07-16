@@ -70,6 +70,14 @@ The runner writes plot variants requiring at least 1, 5, and 10 distinct
 colocalizing genes. These thresholds affect only the figures and their audit
 TSVs, not the underlying analysis or complete summaries.
 
+Run the fastENLOC parsing and aggregation regression tests:
+
+```bash
+bash tests/test_fastenloc_output_normalization.sh
+Rscript tests/test_fastenloc_parsing.R
+Rscript tests/test_gzip_aggregation.R
+```
+
 Check for whitespace issues before committing:
 
 ```bash

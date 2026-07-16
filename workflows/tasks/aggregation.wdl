@@ -10,8 +10,20 @@ task AggregateFiles {
         set -euo pipefail
         files_file="~{write_lines(files)}"
         first_file=$(head -n 1 "$files_file")
-        head -n 1 "$first_file" > ~{output_name}
+        expected_header=$(head -n 1 "$first_file")
+        expected_fields=$(awk -F'\t' 'NR == 1 { print NF }' "$first_file")
+        printf '%s\n' "$expected_header" > ~{output_name}
         while read -r f; do
+          if [ "$(head -n 1 "$f")" != "$expected_header" ]; then
+            echo "Header mismatch while aggregating $f into ~{output_name}" >&2
+            exit 1
+          fi
+          awk -F'\t' -v expected="$expected_fields" -v path="$f" '
+            NR > 1 && NF != expected {
+              printf "Malformed TSV row in %s at line %d: expected %d fields, found %d\n", path, NR, expected, NF > "/dev/stderr"
+              exit 1
+            }
+          ' "$f"
           tail -n +2 "$f" >> ~{output_name}
         done < "$files_file"
     >>>
@@ -40,15 +52,27 @@ task AggregateFilesWithQTLLabel {
         files_file="~{write_lines(files)}"
         labels_file="~{write_lines(qtl_labels)}"
         first_file=$(head -n 1 "$files_file")
+        expected_header=$(head -n 1 "$first_file")
+        expected_fields=$(awk -F'\t' 'NR == 1 { print NF }' "$first_file")
 
         {
             printf "qtl_label\t"
-            head -n 1 "$first_file"
+            printf '%s\n' "$expected_header"
         } > ~{output_name}
 
         exec 3< "$files_file"
         exec 4< "$labels_file"
         while read -r f <&3 && read -r label <&4; do
+            if [ "$(head -n 1 "$f")" != "$expected_header" ]; then
+                echo "Header mismatch while aggregating $f into ~{output_name}" >&2
+                exit 1
+            fi
+            awk -F'\t' -v expected="$expected_fields" -v path="$f" '
+                NR > 1 && NF != expected {
+                    printf "Malformed TSV row in %s at line %d: expected %d fields, found %d\n", path, NR, expected, NF > "/dev/stderr"
+                    exit 1
+                }
+            ' "$f"
             tail -n +2 "$f" | awk -v label="$label" 'BEGIN{OFS="\t"}{print label,$0}'
         done >> ~{output_name}
     >>>
@@ -85,6 +109,8 @@ task AggregateFilesWithGWASMetadata {
         n_variants_file="~{write_lines(n_variants)}"
         n_credible_sets_file="~{write_lines(n_credible_sets)}"
         first_file=$(head -n 1 "$files_file")
+        expected_header=$(head -n 1 "$first_file")
+        expected_fields=$(awk -F'\t' 'NR == 1 { print NF }' "$first_file")
 
         expected=$(wc -l < "$files_file" | tr -d ' ')
         for metadata_file in "$study_ids_file" "$traits_file" "$trait_categories_file" "$n_variants_file" "$n_credible_sets_file"; do
@@ -97,7 +123,7 @@ task AggregateFilesWithGWASMetadata {
 
         {
             printf "study_id\tgwas_trait\ttrait_category\tn_variants\tn_credible_sets\t"
-            head -n 1 "$first_file"
+            printf '%s\n' "$expected_header"
         } > ~{output_name}
 
         exec 3< "$files_file"
@@ -112,6 +138,16 @@ task AggregateFilesWithGWASMetadata {
               read -r trait_category <&6 && \
               read -r n_variant <&7 && \
               read -r n_credible_set <&8; do
+            if [ "$(head -n 1 "$f")" != "$expected_header" ]; then
+                echo "Header mismatch while aggregating $f into ~{output_name}" >&2
+                exit 1
+            fi
+            awk -F'\t' -v expected="$expected_fields" -v path="$f" '
+                NR > 1 && NF != expected {
+                    printf "Malformed TSV row in %s at line %d: expected %d fields, found %d\n", path, NR, expected, NF > "/dev/stderr"
+                    exit 1
+                }
+            ' "$f"
             tail -n +2 "$f" | awk \
                 -v study_id="$study_id" \
                 -v trait="$trait" \
@@ -142,31 +178,10 @@ task AggregateGzTsvFiles {
     }
     command <<<
         set -euo pipefail
-        Rscript -e '
-        files <- readLines("~{write_lines(files)}")
-        out <- gzfile("~{output_name}", "wt")
-        on.exit(close(out))
-        wrote_header <- FALSE
-        for (path in files) {
-          con <- if (endsWith(path, ".gz")) gzfile(path, "rt") else file(path, "rt")
-          header <- readLines(con, n = 1)
-          if (length(header) == 0) {
-            close(con)
-            next
-          }
-          if (!wrote_header) {
-            writeLines(header, out)
-            wrote_header <- TRUE
-          }
-          repeat {
-            chunk <- readLines(con, n = 100000)
-            if (length(chunk) == 0) break
-            writeLines(chunk, out)
-          }
-          close(con)
-        }
-        if (!wrote_header) stop("No input rows found while aggregating gzipped TSV files")
-        '
+        Rscript ~/aggregate_gz_tsv.R \
+          --files "~{write_lines(files)}" \
+          --out "~{output_name}"
+        gzip -t "~{output_name}"
     >>>
 
     output {

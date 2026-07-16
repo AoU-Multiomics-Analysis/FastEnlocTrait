@@ -34,7 +34,7 @@ build_option_parser <- function() {
 }
 
 read_any <- function(path, ...) {
-  args <- list(showProgress = FALSE, ...)
+  args <- list(showProgress = FALSE, fill = TRUE, sep = "\t", ...)
   if (grepl("\\.gz$", path)) args$cmd <- paste("gzip -dc", shQuote(path))
   else                        args$input <- path
   as_tibble(do.call(data.table::fread, args))
@@ -92,6 +92,62 @@ read_fastenloc_combined <- function(path, output_type) {
     stop("Unsupported fastENLOC output type: ", output_type, call. = FALSE)
   )
   bind_cols(meta %>% select(-payload), parsed)
+}
+
+repair_legacy_fastenloc <- function(df, output_type) {
+  # Older aggregation tasks prepended metadata with tabs but left the native
+  # fastENLOC payload fixed-width. fread therefore placed the entire payload
+  # in Signal and shifted/dropped the remaining metrics. Accept those files so
+  # historical runs can be summarized, while new runs arrive as proper TSVs.
+  if (output_type == "fastenloc_sig" &&
+      all(c("Signal", "Num_SNP", "RCP", "LCP") %in% names(df)) &&
+      all(is.na(as_num(df$RCP))) && nrow(df) > 0) {
+    fields <- str_split(str_trim(as.character(df$Signal)), "\\s+")
+    lengths <- lengths(fields)
+    if (any(lengths != 6L)) {
+      bad <- which(lengths != 6L)[[1]]
+      stop("Cannot repair legacy fastENLOC signal row ", bad,
+           ": expected 6 whitespace fields in Signal payload, found ",
+           lengths[[bad]], call. = FALSE)
+    }
+    legacy_lcp <- as_num(df$Num_SNP)
+    df$Signal <- map_chr(fields, 1L)
+    df$Num_SNP <- map_dbl(fields, ~ as_num(.x[[2]]))
+    df$CPIP_qtl <- map_dbl(fields, ~ as_num(.x[[3]]))
+    df$CPIP_gwas_marginal <- map_dbl(fields, ~ as_num(.x[[4]]))
+    df$CPIP_gwas_qtl_prior <- map_dbl(fields, ~ as_num(.x[[5]]))
+    df$RCP <- map_dbl(fields, ~ as_num(.x[[6]]))
+    df$LCP <- legacy_lcp
+  }
+
+  if (output_type == "fastenloc_snp" &&
+      all(c("Signal", "SNP", "SCP") %in% names(df)) &&
+      all(is.na(df$SNP)) && nrow(df) > 0) {
+    fields <- str_split(str_trim(as.character(df$Signal)), "\\s+")
+    lengths <- lengths(fields)
+    if (any(lengths != 6L)) {
+      bad <- which(lengths != 6L)[[1]]
+      stop("Cannot repair legacy fastENLOC SNP row ", bad,
+           ": expected 6 whitespace fields in Signal payload, found ",
+           lengths[[bad]], call. = FALSE)
+    }
+    df$Signal <- map_chr(fields, 1L)
+    df$SNP <- map_chr(fields, 2L)
+    df$PIP_qtl <- map_dbl(fields, ~ as_num(.x[[3]]))
+    df$PIP_gwas_marginal <- map_dbl(fields, ~ as_num(.x[[4]]))
+    df$PIP_gwas_qtl_prior <- map_dbl(fields, ~ as_num(.x[[5]]))
+    df$SCP <- map_dbl(fields, ~ as_num(.x[[6]]))
+  }
+
+  if (output_type == "fastenloc_gene") {
+    unnamed <- names(df)[str_detect(names(df), "^V[0-9]+$")]
+    empty <- unnamed[vapply(unnamed, function(col) {
+      all(is.na(df[[col]]) | as.character(df[[col]]) == "")
+    }, logical(1))]
+    if (length(empty) > 0) df <- df %>% select(-all_of(empty))
+  }
+
+  df
 }
 
 norm_name <- function(x) {

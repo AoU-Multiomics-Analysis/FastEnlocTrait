@@ -75,20 +75,38 @@ task RunColocShard {
             awk 'BEGIN { printf "[" } { printf "%s%s", sep, $0; sep="," } END { print "]" }' "$1" > "$2"
         }
 
+        normalize_fastenloc_output() {
+            bash ~/normalize_fastenloc_output.sh "$1" "$2"
+        }
+
         aggregate_with_qtl_label() {
             local files_file="$1"
             local labels_file="$2"
             local output_name="$3"
             local first_file
+            local expected_header
+            local expected_fields
             first_file=$(head -n 1 "$files_file")
+            expected_header=$(head -n 1 "$first_file")
+            expected_fields=$(awk -F'\t' 'NR == 1 { print NF }' "$first_file")
             {
                 printf "qtl_label\t"
-                head -n 1 "$first_file"
+                printf '%s\n' "$expected_header"
             } > "$output_name"
 
             exec 3< "$files_file"
             exec 4< "$labels_file"
             while read -r f <&3 && read -r label <&4; do
+                if [ "$(head -n 1 "$f")" != "$expected_header" ]; then
+                    echo "Header mismatch while aggregating $f into $output_name" >&2
+                    exit 1
+                fi
+                awk -F'\t' -v expected="$expected_fields" -v path="$f" '
+                    NR > 1 && NF != expected {
+                        printf "Malformed TSV row in %s at line %d: expected %d fields, found %d\n", path, NR, expected, NF > "/dev/stderr"
+                        exit 1
+                    }
+                ' "$f"
                 tail -n +2 "$f" | awk -v label="$label" 'BEGIN{OFS="\t"}{print label,$0}'
             done >> "$output_name"
             exec 3<&-
@@ -146,12 +164,14 @@ task RunColocShard {
                   -prefix "$pair_prefix"
 
                 for out in "$pair_prefix".enloc.*.out; do
-                    header=$(head -n 1 "$out")
+                    normalize_fastenloc_output "$out" "${out}.normalized"
+                    header=$(head -n 1 "${out}.normalized")
                     {
                         printf "trait\t%s\n" "$header"
-                        tail -n +2 "$out" | awk -v trait="$trait" 'BEGIN{OFS="\t"}{print trait,$0}'
+                        tail -n +2 "${out}.normalized" | awk -v trait="$trait" 'BEGIN{OFS="\t"}{print trait,$0}'
                     } > "${out}.tmp"
                     mv "${out}.tmp" "$out"
+                    rm "${out}.normalized"
                 done
 
                 Rscript ~/clpp_fastenloc.R \

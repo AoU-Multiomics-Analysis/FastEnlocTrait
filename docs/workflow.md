@@ -113,6 +113,13 @@ The shard step reduces scheduler overhead for fastENLOC/CLPP while preserving th
 
 Raw per-GWAS outputs get a leading `qtl_label` column. Raw global outputs prepend `study_id`, `gwas_trait`, `trait_category`, `n_variants`, and `n_credible_sets` before `qtl_label`. Harmonized outputs carry GWAS metadata directly, keep the manifest trait in `trait`, and keep the QTL label in `layer`. Credible-set harmonized outputs also carry `consensus_locus_id`, `n_studies_in_locus`, `n_cs_in_locus`, and `is_merged`. Gene-level harmonized outputs retain every fastENLOC gene-level row and join best signal/CLPP evidence when available.
 
+Native fastENLOC result rows are fixed-width whitespace even though their
+headers contain tabs. The workflow normalizes every native result to a true TSV
+before adding trait, QTL-layer, or GWAS metadata, and each aggregation boundary
+checks header equality and row field counts. `summarize_raw_coloc.R` also repairs
+legacy combined signal/SNP files produced before normalization so historical
+runs report their RCP, LCP, PIP, SNP, and credible-set fields correctly.
+
 ## Primary Outputs
 
 | Output | Description |
