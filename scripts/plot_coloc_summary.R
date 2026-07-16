@@ -55,6 +55,11 @@ GROUP_COLORS <- c(
   ophthalmological = "#48CAE4"
 )
 
+RATE_COLUMNS <- c(
+  stringent = "pct_stringent_union",
+  lenient = "pct_lenient_union"
+)
+
 build_option_parser <- function() {
   OptionParser(
     usage = paste(
@@ -62,7 +67,7 @@ build_option_parser <- function() {
       "--coloc_rate coloc_rate_by_trait.tsv [options]"
     ),
     description = paste(
-      "Plot distinct colocalizing-gene counts and stringent consensus-locus",
+      "Plot distinct colocalizing-gene counts and consensus-locus",
       "colocalization rates by trait category."
     ),
     option_list = list(
@@ -78,6 +83,8 @@ build_option_parser <- function() {
                   help = "PDF figure [default %default]"),
       make_option("--min_coloc_genes", type = "integer", default = 1L,
                   help = "Minimum distinct colocalizing genes required to plot a trait [default %default]"),
+      make_option("--rate_type", type = "character", default = "stringent",
+                  help = "Union coloc-rate percentage to plot: stringent or lenient [default %default]"),
       make_option("--width", type = "double", default = 10,
                   help = "Figure width in inches [default %default]"),
       make_option("--height", type = "double", default = NA_real_,
@@ -144,9 +151,21 @@ scale_y_reordered <- function(..., sep = "___") {
   scale_y_discrete(..., labels = function(x) gsub(reg, "", x))
 }
 
-build_plot_data <- function(gene, coloc_rate, min_coloc_genes = 1L) {
+build_plot_data <- function(gene, coloc_rate, min_coloc_genes = 1L,
+                            rate_type = "stringent") {
+  rate_type <- tolower(trimws(rate_type))
+  if (length(rate_type) != 1 || is.na(rate_type) ||
+      !rate_type %in% names(RATE_COLUMNS)) {
+    stop("--rate_type must be one of: ",
+         paste(names(RATE_COLUMNS), collapse = ", "), call. = FALSE)
+  }
+  rate_column <- unname(RATE_COLUMNS[[rate_type]])
   require_columns(gene, c("gene", "trait", "trait_category", "any_coloc"), "--gene")
-  require_columns(coloc_rate, c("trait", "layer", "pct_stringent_union"), "--coloc_rate")
+  require_columns(
+    coloc_rate,
+    c("trait", "layer", unname(RATE_COLUMNS)),
+    "--coloc_rate"
+  )
   if (length(min_coloc_genes) != 1 || is.na(min_coloc_genes) ||
       min_coloc_genes < 1 || min_coloc_genes != as.integer(min_coloc_genes)) {
     stop("--min_coloc_genes must be a positive integer.", call. = FALSE)
@@ -160,7 +179,12 @@ build_plot_data <- function(gene, coloc_rate, min_coloc_genes = 1L) {
 
   pct_coloc <- coloc_rate %>%
     filter(layer == "union") %>%
-    select(trait, pct_stringent_union)
+    transmute(
+      trait,
+      pct_stringent_union,
+      pct_lenient_union,
+      pct_coloc_union = .data[[rate_column]]
+    )
   duplicated_traits <- pct_coloc %>% count(trait) %>% filter(n > 1) %>% pull(trait)
   if (length(duplicated_traits) > 0) {
     stop("--coloc_rate has multiple union rows for trait(s): ",
@@ -168,12 +192,14 @@ build_plot_data <- function(gene, coloc_rate, min_coloc_genes = 1L) {
   }
 
   combined <- coloc_counts %>% left_join(pct_coloc, by = "trait")
-  missing_rate <- combined %>% filter(is.na(pct_stringent_union)) %>% pull(trait)
+  missing_rate <- combined %>% filter(is.na(pct_coloc_union)) %>% pull(trait)
   if (length(missing_rate) > 0) {
-    message("Dropped (no union stringent coloc rate): ",
+    message("Dropped (no union ", rate_type, " coloc rate): ",
             paste(unique(missing_rate), collapse = ", "))
   }
-  combined <- combined %>% filter(!is.na(pct_stringent_union))
+  combined <- combined %>%
+    filter(!is.na(pct_coloc_union)) %>%
+    mutate(rate_type = .env$rate_type)
   trimmed <- combined %>% filter(count < min_coloc_genes) %>% pull(trait)
   if (length(trimmed) > 0) {
     message("Trimmed ", length(trimmed), " trait(s) with fewer than ",
@@ -186,7 +212,7 @@ build_empty_plot <- function() {
   ggplot() +
     annotate(
       "text", x = 0, y = 0,
-      label = "No traits have both colocalizing genes and a union stringent coloc rate",
+      label = "No traits have both colocalizing genes and the selected union coloc rate",
       color = "grey35", size = 4
     ) +
     xlim(-1, 1) +
@@ -220,12 +246,16 @@ build_plot <- function(combined) {
     plotdat %>% transmute(trait_category, trait, base_col, fill_col,
                           metric = "a_count", value = count),
     plotdat %>% transmute(trait_category, trait, base_col, fill_col,
-                          metric = "b_rate", value = pct_stringent_union)
+                          metric = "b_rate", value = pct_coloc_union)
   )
   xline <- -max(plotdat$count) * 0.03
   seg <- plotdat %>% count(trait_category, name = "nbar") %>% mutate(metric = "a_count")
-  vref <- tibble(metric = "b_rate", xi = median(plotdat$pct_stringent_union, na.rm = TRUE))
-  metric_labels <- c(a_count = "colocalizing genes", b_rate = "CS coloc rate")
+  vref <- tibble(metric = "b_rate", xi = median(plotdat$pct_coloc_union, na.rm = TRUE))
+  selected_rate <- unique(plotdat$rate_type)
+  metric_labels <- c(
+    a_count = "colocalizing genes",
+    b_rate = paste0("CS coloc rate (", selected_rate[[1]], ")")
+  )
   category_labeller <- c(GROUP_LABELS, setNames(
     setdiff(as.character(unique(plotdat$trait_category)), names(GROUP_LABELS)),
     setdiff(as.character(unique(plotdat$trait_category)), names(GROUP_LABELS))
@@ -291,7 +321,8 @@ main <- function() {
   }
 
   combined <- build_plot_data(
-    read_any(a$gene), read_any(a$coloc_rate), min_coloc_genes = a$min_coloc_genes
+    read_any(a$gene), read_any(a$coloc_rate),
+    min_coloc_genes = a$min_coloc_genes, rate_type = a$rate_type
   )
   write_tsv(combined %>% arrange(trait_category, desc(count), trait), a$plot_data_out)
 
