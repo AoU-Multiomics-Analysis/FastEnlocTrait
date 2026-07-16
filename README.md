@@ -12,7 +12,8 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 6. Summarizes raw fastENLOC and CLPP output families by QTL layer.
 7. Harmonizes fastENLOC and CLPP results at signal, credible-set, and gene levels, with consensus locus IDs on credible-set rollups.
 8. Summarizes de-duplicated colocalization rates and colocalizing genes by trait, QTL layer, and cross-layer union.
-9. Packages the main analysis-ready outputs into one archive for easier browsing.
+9. Plots distinct colocalizing-gene counts beside cross-layer stringent consensus-locus colocalization rates.
+10. Packages the main analysis-ready outputs into one archive for easier browsing.
 
 The main workflow is:
 
@@ -74,6 +75,11 @@ The workflow emits all-GWAS/all-QTL combined outputs plus per-GWAS and per-GWAS-
 | `coloc_rate_by_trait_out` | Trait x layer and cross-layer union colocalization rates across consensus loci. |
 | `gene_summary_by_trait_out` | Consensus-locus-based trait x layer and cross-layer union gene counts, genes per locus, protein-coding counts, and gene IDs. |
 | `colocalizing_genes_long_out` | Long table of colocalizing genes by trait, layer, and consensus locus. |
+| `coloc_summary_plot_data_out` | Trait-level data used in the final summary figure. |
+| `coloc_summary_png_out` | Final gene-count and stringent coloc-rate summary figure in PNG format. |
+| `coloc_summary_pdf_out` | Vector PDF version of the final summary figure. |
+| `coloc_summary_*_min5_out` | Plot data, PNG, and PDF restricted to traits with at least 5 colocalizing genes. |
+| `coloc_summary_*_min10_out` | Plot data, PNG, and PDF restricted to traits with at least 10 colocalizing genes. |
 | `high_level_outputs_archive` | Tarball containing the main manifests, consensus files, raw combined outputs, harmonized outputs, and final summary tables. |
 
 Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns plus `qtl_label`; the manifest trait is named `gwas_trait` there to avoid colliding with fastENLOC's own `trait` column. Harmonized outputs store the QTL label in `layer` and include `study`, `trait`, `trait_category`, `n_variants`, and `n_credible_sets`.
@@ -100,6 +106,7 @@ Use `harmonized_gene_out` for complete fastENLOC gene-level evidence, including 
 │   ├── clpp_fastenloc.R
 │   ├── harmonize_coloc.R
 │   ├── merge_credible_sets.R
+│   ├── plot_coloc_summary.R
 │   ├── summarize_coloc.R
 │   └── summarize_raw_coloc.R
 └── workflows/

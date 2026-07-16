@@ -40,6 +40,60 @@ read_any <- function(path, ...) {
   as_tibble(do.call(data.table::fread, args))
 }
 
+read_fastenloc_combined <- function(path, output_type) {
+  args <- list(
+    header = FALSE,
+    sep = "\t",
+    skip = 1,
+    fill = TRUE,
+    quote = "",
+    showProgress = FALSE
+  )
+  if (grepl("\\.gz$", path)) args$cmd <- paste("gzip -dc", shQuote(path))
+  else                         args$input <- path
+  dt <- do.call(data.table::fread, args)
+  if (ncol(dt) < 8) {
+    stop(output_type, " input has fewer than eight tab-delimited fields: ", path,
+         call. = FALSE)
+  }
+
+  metadata_names <- c(
+    "study_id", "gwas_trait", "trait_category", "n_variants",
+    "n_credible_sets", "qtl_label", "trait"
+  )
+  setnames(dt, names(dt)[seq_along(metadata_names)], metadata_names)
+  payload_cols <- names(dt)[-(seq_along(metadata_names))]
+  dt[, payload := trimws(do.call(paste, c(.SD, sep = " "))), .SDcols = payload_cols]
+  meta <- as_tibble(dt[, c(metadata_names, "payload"), with = FALSE])
+
+  tokens <- data.table::tstrsplit(meta$payload, "[[:space:]]+", perl = TRUE)
+  token <- function(i) {
+    if (length(tokens) < i) rep(NA_character_, nrow(meta)) else tokens[[i]]
+  }
+  parsed <- switch(
+    output_type,
+    fastenloc_gene = tibble(Gene = token(1), GRCP = token(2), GLCP = token(3)),
+    fastenloc_mi = tibble(a0 = token(1), a1 = token(2),
+                          p_eqtl = token(3), p_gwas = token(4)),
+    fastenloc_sig = tibble(
+      Signal = token(1), Num_SNP = token(2), CPIP_qtl = token(3),
+      CPIP_gwas_marginal = token(4), CPIP_gwas_qtl_prior = token(5),
+      RCP = token(6), LCP = token(7)
+    ),
+    fastenloc_snp = tibble(
+      Signal = token(1), SNP = token(2), PIP_qtl = token(3),
+      PIP_gwas_marginal = token(4), PIP_gwas_qtl_prior = token(5),
+      SCP = token(6)
+    ),
+    fastenloc_enrich = {
+      parts <- str_match(meta$payload, "^(.*)[[:space:]]+([^[:space:]]+)[[:space:]]+([^[:space:]]+)$")
+      tibble(term = parts[, 2], estimate = parts[, 3], standard_error = parts[, 4])
+    },
+    stop("Unsupported fastENLOC output type: ", output_type, call. = FALSE)
+  )
+  bind_cols(meta %>% select(-payload), parsed)
+}
+
 repair_legacy_fastenloc <- function(df, output_type) {
   # Older aggregation tasks prepended metadata with tabs but left the native
   # fastENLOC payload fixed-width. fread therefore placed the entire payload
@@ -177,7 +231,7 @@ count_qtl_signals <- function(df, qtl_sig_col, signal_parts) {
 }
 
 summarize_one <- function(df, output_type, qtl_label) {
-  qdf <- df %>% filter(.data$qtl_label == qtl_label)
+  qdf <- df %>% filter(.data$qtl_label == .env$qtl_label)
   gene_col <- find_col(qdf, c("Gene", "gene"))
   signal_col <- find_col(qdf, c("Signal", "signal"))
   snp_col <- find_col(qdf, c("SNP", "snp", "variant", "variant_id", "rsid"))
@@ -236,7 +290,11 @@ summarize_one <- function(df, output_type, qtl_label) {
 }
 
 summarize_table <- function(path, output_type, qtl_labels) {
-  df <- read_any(path) %>% repair_legacy_fastenloc(output_type)
+  df <- if (startsWith(output_type, "fastenloc_")) {
+    read_fastenloc_combined(path, output_type)
+  } else {
+    read_any(path)
+  }
   if (!"qtl_label" %in% names(df)) {
     stop(output_type, " input is missing required qtl_label column: ", path, call. = FALSE)
   }

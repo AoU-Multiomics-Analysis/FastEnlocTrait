@@ -130,3 +130,19 @@ Rscript scripts/summarize_coloc.R \
 ```
 
 The WDL runs this once at the end of the workflow. It produces trait x QTL-layer summaries plus a `union` layer that counts a consensus locus or gene once if it colocalizes in any QTL layer. Coverage rates use `consensus_locus_id` as the denominator, so cross-study GWAS credible sets for the same trait are not double counted. Gene summaries from this script are derived from the credible-set-level gene lists; use `harmonized_coloc.gene.tsv.gz` when you want the complete fastENLOC gene-level table, including high-GLCP/GRCP genes without matched signal-level evidence.
+
+## Plot the Final Trait Summary
+
+`scripts/plot_coloc_summary.R` reproduces the paired bar/lollipop summary at the end of the WDL:
+
+```bash
+Rscript scripts/plot_coloc_summary.R \
+  --gene harmonized_coloc.gene.tsv.gz \
+  --coloc_rate coloc_rate_by_trait.tsv \
+  --plot_data_out coloc_summary_plot_data.tsv \
+  --png_out coloc_summary.png \
+  --pdf_out coloc_summary.pdf \
+  --min_coloc_genes 10
+```
+
+The left panel counts distinct `(gene, trait, trait_category)` rows with gene-level `any_coloc == TRUE`, so repeated evidence across studies or QTL layers does not inflate the count. `--min_coloc_genes` trims traits below the requested count (default `1`). The right panel uses `pct_stringent_union` from the `layer == "union"` row of `coloc_rate_by_trait.tsv`; that rate is based on de-duplicated consensus loci. Traits without a union rate or without enough colocalizing genes are not plotted. The script writes the filtered plotting data to TSV for auditability and assigns fallback colors to categories not present in its built-in palette.

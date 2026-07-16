@@ -76,6 +76,62 @@ task SummarizeRawColocByQTL {
     }
 }
 
+task PlotColocSummary {
+    input {
+        File gene_output
+        File coloc_rate_output
+        String plot_data_output_name = "coloc_summary_plot_data.tsv"
+        String png_output_name = "coloc_summary.png"
+        String pdf_output_name = "coloc_summary.pdf"
+    }
+
+    command <<<
+        set -euo pipefail
+        Rscript ~/plot_coloc_summary.R \
+          --gene "~{gene_output}" \
+          --coloc_rate "~{coloc_rate_output}" \
+          --plot_data_out "~{plot_data_output_name}" \
+          --png_out "~{png_output_name}" \
+          --pdf_out "~{pdf_output_name}" \
+          --min_coloc_genes 1
+
+        Rscript ~/plot_coloc_summary.R \
+          --gene "~{gene_output}" \
+          --coloc_rate "~{coloc_rate_output}" \
+          --plot_data_out "coloc_summary_plot_data.min5.tsv" \
+          --png_out "coloc_summary.min5.png" \
+          --pdf_out "coloc_summary.min5.pdf" \
+          --min_coloc_genes 5
+
+        Rscript ~/plot_coloc_summary.R \
+          --gene "~{gene_output}" \
+          --coloc_rate "~{coloc_rate_output}" \
+          --plot_data_out "coloc_summary_plot_data.min10.tsv" \
+          --png_out "coloc_summary.min10.png" \
+          --pdf_out "coloc_summary.min10.pdf" \
+          --min_coloc_genes 10
+    >>>
+
+    output {
+        File plot_data = "~{plot_data_output_name}"
+        File png = "~{png_output_name}"
+        File pdf = "~{pdf_output_name}"
+        File plot_data_min5 = "coloc_summary_plot_data.min5.tsv"
+        File png_min5 = "coloc_summary.min5.png"
+        File pdf_min5 = "coloc_summary.min5.pdf"
+        File plot_data_min10 = "coloc_summary_plot_data.min10.tsv"
+        File png_min10 = "coloc_summary.min10.png"
+        File pdf_min10 = "coloc_summary.min10.pdf"
+    }
+
+    runtime {
+        docker: "ghcr.io/aou-multiomics-analysis/fastenloctrait:main"
+        memory: "8G"
+        disks: "local-disk 50 SSD"
+        cpu: 1
+    }
+}
+
 task CollectHighLevelOutputs {
     input {
         File normalized_gwas_manifest
@@ -96,6 +152,15 @@ task CollectHighLevelOutputs {
         File coloc_rate_by_trait
         File gene_summary_by_trait
         File colocalizing_genes_long
+        File coloc_summary_plot_data
+        File coloc_summary_png
+        File coloc_summary_pdf
+        File coloc_summary_plot_data_min5
+        File coloc_summary_png_min5
+        File coloc_summary_pdf_min5
+        File coloc_summary_plot_data_min10
+        File coloc_summary_png_min10
+        File coloc_summary_pdf_min10
         String archive_name = "high_level_coloc_outputs.tar.gz"
     }
 
@@ -109,7 +174,8 @@ task CollectHighLevelOutputs {
           "$outdir/raw_fastenloc" \
           "$outdir/raw_summaries/per_qtl" \
           "$outdir/harmonized" \
-          "$outdir/final_summaries"
+          "$outdir/final_summaries" \
+          "$outdir/figures"
 
         cp "~{normalized_gwas_manifest}" "$outdir/manifests/normalized_gwas_manifest.tsv"
         cp "~{localized_gwas_manifest}" "$outdir/manifests/localized_gwas_manifest.tsv"
@@ -138,6 +204,15 @@ task CollectHighLevelOutputs {
         cp "~{coloc_rate_by_trait}" "$outdir/final_summaries/coloc_rate_by_trait.tsv"
         cp "~{gene_summary_by_trait}" "$outdir/final_summaries/gene_summary_by_trait.tsv"
         cp "~{colocalizing_genes_long}" "$outdir/final_summaries/colocalizing_genes_long.tsv"
+        cp "~{coloc_summary_plot_data}" "$outdir/final_summaries/coloc_summary_plot_data.tsv"
+        cp "~{coloc_summary_png}" "$outdir/figures/coloc_summary.png"
+        cp "~{coloc_summary_pdf}" "$outdir/figures/coloc_summary.pdf"
+        cp "~{coloc_summary_plot_data_min5}" "$outdir/final_summaries/coloc_summary_plot_data.min5.tsv"
+        cp "~{coloc_summary_png_min5}" "$outdir/figures/coloc_summary.min5.png"
+        cp "~{coloc_summary_pdf_min5}" "$outdir/figures/coloc_summary.min5.pdf"
+        cp "~{coloc_summary_plot_data_min10}" "$outdir/final_summaries/coloc_summary_plot_data.min10.tsv"
+        cp "~{coloc_summary_png_min10}" "$outdir/figures/coloc_summary.min10.png"
+        cp "~{coloc_summary_pdf_min10}" "$outdir/figures/coloc_summary.min10.pdf"
 
         find "$outdir" -type f | sort > "$outdir/CONTENTS.txt"
         tar -czf "~{archive_name}" "$outdir"

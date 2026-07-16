@@ -34,6 +34,42 @@ Syntax-check all R scripts:
 Rscript -e 'for (f in list.files("scripts", pattern = "[.]R$", full.names = TRUE)) { parse(f); cat("parse OK:", f, "\n") }'
 ```
 
+Run the final summary-plot unit test:
+
+```bash
+Rscript tests/test_plot_coloc_summary.R
+Rscript tests/test_summarize_raw_coloc.R
+```
+
+Run a representative local data smoke test without a WDL engine:
+
+```bash
+scripts/run_local_smoke_test.sh \
+  "/path/to/Open targets fine-mapping" \
+  "/path/to/susie_files" \
+  test_runs/opentargets_smoke \
+  /path/to/fastenloc \
+  /path/to/gencode.annotation.gtf.gz
+```
+
+The runner selects the study with the most credible sets in each trait category, runs all three QTL layers, and preserves intermediate/raw data, logs, harmonized outputs, summaries, figures, and a QC table. It reuses completed pair outputs when rerun against the same output directory.
+
+To run one representative study for every distinct trait, set
+`SELECTION_MODE=trait_max`. Use `SELECTION_MODE=all` to retain every manifest
+study. For each study, the eQTL, sQTL, and pQTL analyses run concurrently.
+
+```bash
+SELECTION_MODE=trait_max scripts/run_local_smoke_test.sh \
+  "/path/to/Open targets fine-mapping" \
+  "/path/to/susie_files" \
+  test_runs/opentargets_all_traits \
+  /path/to/fastenloc
+```
+
+The runner writes plot variants requiring at least 1, 5, and 10 distinct
+colocalizing genes. These thresholds affect only the figures and their audit
+TSVs, not the underlying analysis or complete summaries.
+
 Run the fastENLOC parsing and aggregation regression tests:
 
 ```bash
