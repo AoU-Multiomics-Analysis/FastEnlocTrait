@@ -34,6 +34,14 @@ Syntax-check all R scripts:
 Rscript -e 'for (f in list.files("scripts", pattern = "[.]R$", full.names = TRUE)) { parse(f); cat("parse OK:", f, "\n") }'
 ```
 
+Run the fastENLOC parsing and aggregation regression tests:
+
+```bash
+bash tests/test_fastenloc_output_normalization.sh
+Rscript tests/test_fastenloc_parsing.R
+Rscript tests/test_gzip_aggregation.R
+```
+
 Check for whitespace issues before committing:
 
 ```bash

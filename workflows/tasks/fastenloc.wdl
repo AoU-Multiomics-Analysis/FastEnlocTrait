@@ -30,13 +30,15 @@ task FastEnloc {
       -prefix "~{output_prefix}"
 
     for out in "~{output_prefix}".enloc.*.out; do
-        header=$(head -n1 "$out")
+        bash ~/normalize_fastenloc_output.sh "$out" "${out}.normalized"
+        header=$(head -n1 "${out}.normalized")
         {
             printf "trait\t%s\n" "$header"
-            tail -n +2 "$out" | \
+            tail -n +2 "${out}.normalized" | \
                 awk -v trait="~{trait}" 'BEGIN{OFS="\t"}{print trait,$0}'
         } > tmp
         mv tmp "$out"
+        rm "${out}.normalized"
     done
     >>>
     runtime {
