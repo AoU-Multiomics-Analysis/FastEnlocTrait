@@ -29,6 +29,8 @@ Open Targets.
 - `queries/credible_set_locus_page.graphql`: additional nested-locus pages.
 - `../scripts/validate_gwas_manifest.py`: bulk validation of every GWAS file
   against its generated manifest row.
+- `../scripts/organize_gwas_release.py`: restore the established relative file
+  layout from a prior manifest and atomically update current manifest/QC paths.
 - `tests/test_pull_finemapping.py`: offline conversion and manifest tests.
 
 ## Requirements
@@ -87,6 +89,25 @@ python3 scripts/validate_gwas_manifest.py \
   --manifest opentargets_pull/gwas_manifest.tsv \
   --out opentargets_pull/gwas_validation_qc.tsv
 ```
+
+To retain an established release layout such as `MVP/` and
+`traits/<category>/<trait>/`, reorganize the current files using a previous
+manifest as the layout specification, then validate again:
+
+```bash
+python3 scripts/organize_gwas_release.py \
+  --manifest opentargets_pull/gwas_manifest.tsv \
+  --layout-manifest previous_gwas_manifest.tsv \
+  --release-root opentargets_pull \
+  --retrieval-qc opentargets_pull/retrieval_qc.tsv
+
+python3 scripts/validate_gwas_manifest.py \
+  --manifest opentargets_pull/gwas_manifest.tsv \
+  --out opentargets_pull/gwas_validation_qc.tsv
+```
+
+Only the relative layout is inherited. Current methods, credible-set counts,
+and file contents remain those of the newly retrieved release.
 
 Every emitted credible-set identifier contains its chromosome, observed
 variant interval, and Open Targets `studyLocusId`, for example
