@@ -1,0 +1,21 @@
+query CredibleSetLocusPage($studyLocusId: String!, $locusPage: Pagination!) {
+  credibleSet(studyLocusId: $studyLocusId) {
+    studyId
+    studyLocusId
+    locus(page: $locusPage) {
+      count
+      rows {
+        posteriorProbability
+        is95CredibleSet
+        is99CredibleSet
+        variant {
+          id
+          chromosome
+          position
+          referenceAllele
+          alternateAllele
+        }
+      }
+    }
+  }
+}

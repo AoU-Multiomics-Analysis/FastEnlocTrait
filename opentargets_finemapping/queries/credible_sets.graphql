@@ -1,0 +1,41 @@
+query CredibleSets($studyIds: [String!], $page: Pagination!, $locusPage: Pagination!) {
+  credibleSets(studyIds: $studyIds, page: $page) {
+    count
+    rows {
+      studyId
+      studyLocusId
+      studyType
+      chromosome
+      position
+      locusStart
+      locusEnd
+      credibleSetIndex
+      finemappingMethod
+      confidence
+      sampleSize
+      subStudyDescription
+      variant {
+        id
+        chromosome
+        position
+        referenceAllele
+        alternateAllele
+      }
+      locus(page: $locusPage) {
+        count
+        rows {
+          posteriorProbability
+          is95CredibleSet
+          is99CredibleSet
+          variant {
+            id
+            chromosome
+            position
+            referenceAllele
+            alternateAllele
+          }
+        }
+      }
+    }
+  }
+}

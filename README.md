@@ -92,6 +92,14 @@ Raw combined fastENLOC and CLPP outputs include leading GWAS metadata columns pl
 
 Use `harmonized_gene_out` for complete fastENLOC gene-level evidence, including high-GLCP/GRCP genes without matched signal-level coloc rows. Use `gene_summary_by_trait_out` for downstream coverage-style gene summaries tied to consensus loci.
 
+## Re-pulling Open Targets fine-mapping inputs
+
+[`opentargets_finemapping/`](opentargets_finemapping/) contains a
+self-contained downloader and converter for the approved Open Targets study
+snapshot. It includes a path-redacted 401-study manifest, paginated GraphQL
+queries, deterministic fastENLOC conversion, response caching, QC, offline
+tests, and pipeline-manifest generation.
+
 ## Documentation
 
 - [Workflow reference](docs/workflow.md): WDL inputs, outputs, multi-QTL behavior, and output naming.

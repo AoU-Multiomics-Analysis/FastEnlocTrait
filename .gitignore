@@ -1,1 +1,4 @@
 test_runs/
+__pycache__/
+*.py[cod]
+opentargets_pull/

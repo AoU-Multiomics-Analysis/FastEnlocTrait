@@ -1,0 +1,402 @@
+study_id	trait	trait_category	finemap_method	n_credible_sets	n_variants	n_variants_source	n_samples	canonical_trait	statistic	ancestry	trait_detail
+GCST90399687	Asthma	allergic_respiratory	SuSiE	157	38355126	gwas_catalog_sumstats_original_rows		Asthma			Asthma
+GCST90473712	Asthma	allergic_respiratory	SuSiE	94	102304434	gwas_catalog_rest_snpCount		Asthma			Asthma
+GCST90503109	Atopic eczema	allergic_respiratory	SuSiE	117	57514631	gwas_catalog_rest_snpCount		Atopic eczema			Atopic eczema
+GCST90013970	allergic rhinitis	allergic_respiratory	SuSiE-inf	188	11914699	gwas_catalog_rest_snpCount	407746	allergic rhinitis			allergic rhinitis
+GCST90399686	asthma	allergic_respiratory	SuSiE-inf	167	27096526	gwas_catalog_sumstats_original_rows	1376071	asthma			asthma
+FINNGEN_R12_L12_ATOPIC	atopic dermatitis	allergic_respiratory	SuSie	98	21311942	finngen_r12_cohort_constant	464119	atopic dermatitis			atopic dermatitis
+GCST007692	chronic obstructive pulmonary disease	allergic_respiratory	PICS	67	6224355	gwas_catalog_rest_snpCount	257811	chronic obstructive pulmonary disease			chronic obstructive pulmonary disease
+GCST90691864	body height	anthropometric	SuSiE-inf	4830	23861814	gwas_catalog_rest_snpCount	419596	body height			body height
+GCST90013870	body mass index	anthropometric	SuSiE-inf	723	11914699	gwas_catalog_rest_snpCount	407609	body mass index			body mass index
+GCST90475762	obesity	anthropometric	SuSiE-inf	419	44300000	gwas_catalog_rest_snpCount	413854	obesity			obesity
+FINNGEN_R12_K11_COELIAC	Celiac disease	autoimmune	SuSiE	31	21311942	finngen_r12_cohort_constant		Celiac disease			Celiac disease
+GCST90446792	Crohn's disease	autoimmune	SuSiE-inf	223	22382520	gwas_catalog_sumstats_original_rows	367592	Crohn's disease			Crohn's disease
+GCST90018627	Graves disease	autoimmune	SuSiE-inf	30	13429311	gwas_catalog_rest_snpCount	175465	Graves disease			Graves disease
+GCST90292538	Inflammatory bowel disease	autoimmune	SuSiE	293	22406955	gwas_catalog_sumstats_original_rows		Inflammatory bowel disease			Inflammatory bowel disease
+GCST90473823	Inflammatory bowel disease	autoimmune	SuSiE	14	102304434	gwas_catalog_rest_snpCount		Inflammatory bowel disease			Inflammatory bowel disease
+FINNGEN_R12_G6_MS	Multiple sclerosis	autoimmune	SuSiE	14	21311942	finngen_r12_cohort_constant		Multiple sclerosis			Multiple sclerosis
+GCST90472771	Psoriasis	autoimmune	SuSiE	103	11808957	gwas_catalog_rest_snpCount		Psoriasis			Psoriasis
+GCST90473937	Psoriasis	autoimmune	SuSiE	33	102304434	gwas_catalog_rest_snpCount		Psoriasis			Psoriasis
+GCST90132222	Rheumatoid arthritis	autoimmune	SuSiE	96	20990826	gwas_catalog_rest_snpCount		Rheumatoid arthritis			Rheumatoid arthritis
+GCST90131438	Rheumatoid arthritis	autoimmune	SuSiE	29	64000000	gwas_catalog_rest_snpCount		Rheumatoid arthritis			Rheumatoid arthritis
+GCST90131437	Rheumatoid arthritis	autoimmune	SuSiE	24	64000000	gwas_catalog_rest_snpCount		Rheumatoid arthritis			Rheumatoid arthritis
+FINNGEN_R12_M13_ANKYLOSPON	ankylosing spondylitis	autoimmune	SuSie	22	21311942	finngen_r12_cohort_constant	357062	ankylosing spondylitis			ankylosing spondylitis
+GCST010571	autoimmune thyroid disease	autoimmune	PICS	88	42900000	gwas_catalog_rest_snpCount	754406	autoimmune thyroid disease			autoimmune thyroid disease
+GCST90061440	primary biliary cholangitis	autoimmune	SuSiE-inf	50	5054572	gwas_catalog_rest_snpCount	24510	primary biliary cholangitis			primary biliary cholangitis
+GCST004030	primary sclerosing cholangitis	autoimmune	SuSiE-inf	11	7891602	gwas_catalog_rest_snpCount	14890	primary sclerosing cholangitis			primary sclerosing cholangitis
+GCST90503483	sarcoidosis	autoimmune	PICS	21	32494156	gwas_catalog_rest_snpCount	1374560	sarcoidosis			sarcoidosis
+GCST90446794	ulcerative colitis	autoimmune	SuSiE-inf	170	22361765	gwas_catalog_sumstats_original_rows	375508	ulcerative colitis			ulcerative colitis
+GCST004988	Breast carcinoma	cancer	SuSiE	210	11800000	gwas_catalog_rest_snpCount		Breast carcinoma			Breast carcinoma
+FINNGEN_R12_C3_MELANOMA_EXALLC	Melanoma	cancer	SuSiE	27	21311942	finngen_r12_cohort_constant		Melanoma			Melanoma
+GCST90274714	Prostate carcinoma	cancer	SuSiE	442	27244980	gwas_catalog_rest_snpCount		Prostate carcinoma			Prostate carcinoma
+GCST90132315	Coronary artery disease	cardiometabolic	SuSiE	242	20804423	gwas_catalog_rest_snpCount		Coronary artery disease			Coronary artery disease
+FINNGEN_R12_I9_HYPTENS	Hypertension	cardiometabolic	SuSiE	405	21311942	finngen_r12_cohort_constant		Hypertension			Hypertension
+GCST90492734	Type 2 diabetes	cardiometabolic	SuSiE	687	20000000	fallback_existing_manifest_no_gwas_catalog_count		Type 2 diabetes			Type 2 diabetes
+GCST90624412	atrial fibrillation	cardiometabolic	SuSiE-inf	885	36072754	gwas_catalog_rest_snpCount	1840341	atrial fibrillation			atrial fibrillation
+GCST90455657	heart failure	cardiometabolic	PICS	166	40637482	gwas_catalog_rest_snpCount	2358556	heart failure			heart failure
+GCST90104539	stroke	cardiometabolic	SuSiE-inf	22	7511477	gwas_catalog_rest_snpCount	1308460	stroke			stroke
+GCST90399744	venous thromboembolism	cardiometabolic	SuSiE-inf	69	23179803	gwas_catalog_sumstats_original_rows	915868	venous thromboembolism			venous thromboembolism
+GCST90691573	C-reactive protein measurement	clinical_chemistry	SuSiE-inf	503	23861814	gwas_catalog_rest_snpCount	400094	C-reactive protein measurement			C-reactive protein measurement
+GCST90014007	HDL cholesterol	lipid	SuSiE-inf	663	11914699	gwas_catalog_rest_snpCount	357810	HDL cholesterol			HDL cholesterol
+GCST90002412	LDL cholesterol	lipid	SuSiE-inf	694	15000001	gwas_catalog_rest_snpCount	431167	LDL cholesterol			LDL cholesterol
+GCST90475735	gout	musculoskeletal	SuSiE-inf	198	44300000	gwas_catalog_rest_snpCount	440023	gout			gout
+GCST90014014	triglycerides	lipid	SuSiE-inf	530	11914699	gwas_catalog_rest_snpCount	389562	triglycerides			triglycerides
+GCST90014015	urate measurement	clinical_chemistry	SuSiE-inf	574	11914699	gwas_catalog_rest_snpCount	389404	urate measurement			urate measurement
+GCST90027158	Alzheimer disease	neurodegenerative	SuSiE	83	21101114	gwas_catalog_rest_snpCount		Alzheimer disease			Alzheimer disease
+GCST90308590	Parkinson disease	neurodegenerative	SuSiE	67	20000000	fallback_existing_manifest_no_gwas_catalog_count		Parkinson disease			Parkinson disease
+GCST90476128	chronic kidney disease	renal_urological	SuSiE-inf	33	44300000	gwas_catalog_rest_snpCount	437875	chronic kidney disease			chronic kidney disease
+FINNGEN_R12_F5_DEPRESSION_DYSTHYMIA	major depressive disorder	neuropsychiatric	SuSiE	77	21311942	finngen_r12_cohort_constant	326981	major depressive disorder			major depressive disorder
+GCST90568441	attention deficit hyperactivity disorder	neuropsychiatric	SuSiE	30	6571852	gwas_catalog_rest_snpCount	299017	attention deficit hyperactivity disorder			attention deficit hyperactivity disorder
+FINNGEN_R12_MIGRAINE_TRIPTAN	migraine	neurological	SuSiE	58	21311942	finngen_r12_cohort_constant	500348	migraine			migraine
+GCST90027163	amyotrophic lateral sclerosis	neurological	SuSiE	17	10461755	gwas_catalog_rest_snpCount	152268	amyotrophic lateral sclerosis			amyotrophic lateral sclerosis
+GCST90475829	restless legs syndrome	neurological	SuSiE	40	44300000	gwas_catalog_rest_snpCount	443920	restless legs syndrome			restless legs syndrome
+GCST90476047	gastroesophageal reflux disease	gastrointestinal	SuSiE	67	44300000	gwas_catalog_rest_snpCount	412728	gastroesophageal reflux disease			gastroesophageal reflux disease
+GCST90476073	diverticular disease	gastrointestinal	SuSiE	121	44300000	gwas_catalog_rest_snpCount	391654	diverticular disease			diverticular disease
+FINNGEN_R12_K11_CHOLELITH	cholelithiasis	gastrointestinal	SuSiE	112	21311942	finngen_r12_cohort_constant	487252	cholelithiasis			cholelithiasis
+FINNGEN_R12_M13_ARTHROSIS_INCLAVO	osteoarthritis	musculoskeletal	SuSiE	112	21311942	finngen_r12_cohort_constant	500348	osteoarthritis			osteoarthritis
+GCST90476259	osteoporosis	musculoskeletal	SuSiE	36	44300000	gwas_catalog_rest_snpCount	442537	osteoporosis			osteoporosis
+GCST90566798	hip osteoarthritis	musculoskeletal	SuSiE	201	20097305	gwas_catalog_rest_snpCount	1152707	hip osteoarthritis			hip osteoarthritis
+FINNGEN_R12_M13_ARTHROSIS_KNEE	knee osteoarthritis	musculoskeletal	SuSiE	113	21311942	finngen_r12_cohort_constant	376471	knee osteoarthritis			knee osteoarthritis
+GCST90475731	gout	musculoskeletal	SuSiE	192	44300000	gwas_catalog_rest_snpCount	437979	gout			gout
+GCST90132226	Rheumatoid arthritis	autoimmune	SuSiE	70	20990826	gwas_catalog_rest_snpCount	92044	Rheumatoid arthritis			Rheumatoid arthritis
+FINNGEN_R12_H7_AMD	age-related macular degeneration	ophthalmological	SuSiE	42	21311942	finngen_r12_cohort_constant	474181	age-related macular degeneration			age-related macular degeneration
+GCST90475869	glaucoma	ophthalmological	SuSiE	326	44300000	gwas_catalog_rest_snpCount	430721	glaucoma			glaucoma
+GCST90475872	primary open angle glaucoma	ophthalmological	SuSiE	250	44300000	gwas_catalog_rest_snpCount	434033	primary open angle glaucoma			primary open angle glaucoma
+GCST90475880	myopia	ophthalmological	SuSiE	86	44300000	gwas_catalog_rest_snpCount	398816	myopia			myopia
+GCST90014268	cataract	ophthalmological	SuSiE	42	9869154	gwas_catalog_rest_snpCount	586243	cataract			cataract
+FINNGEN_R12_N14_ENDOMETRIOSIS_ASRM_STAGE3_4	endometriosis	reproductive_endocrine	SuSiE	43	21311942	finngen_r12_cohort_constant	282064	endometriosis			endometriosis
+FINNGEN_R12_E4_PCOS_BROAD	polycystic ovary syndrome	reproductive_endocrine	SuSiE	13	21311942	finngen_r12_cohort_constant	277831	polycystic ovary syndrome			polycystic ovary syndrome
+GCST90461958	uterine fibroid	reproductive_endocrine	SuSiE	145	10954878	gwas_catalog_rest_snpCount	434152	uterine fibroid			uterine fibroid
+GCST90572791	hypothyroidism	reproductive_endocrine	SuSiE	399	34556406	gwas_catalog_rest_snpCount	1178661	hypothyroidism			hypothyroidism
+GCST90476145	nephrolithiasis	renal_urological	SuSiE	94	44300000	gwas_catalog_rest_snpCount	435154	nephrolithiasis			nephrolithiasis
+FINNGEN_R12_N14_PROSTHYPERPLA	benign prostatic hyperplasia	renal_urological	SuSiE	70	21311942	finngen_r12_cohort_constant	194710	benign prostatic hyperplasia			benign prostatic hyperplasia
+GCST90277434	lung carcinoma	cancer	SuSiE	16	9452098	gwas_catalog_rest_snpCount	16870	lung carcinoma			lung carcinoma
+GCST90016665	ovarian carcinoma	cancer	SuSiE	27	10163797	gwas_catalog_rest_snpCount	63702	ovarian carcinoma			ovarian carcinoma
+FINNGEN_R12_C3_KIDNEY_NOTRENALPELVIS_EXALLC	kidney cancer	cancer	SuSiE	10	21311942	finngen_r12_cohort_constant	382675	kidney cancer			kidney cancer
+GCST006464	endometrial carcinoma	cancer	SuSiE	17	11700000	gwas_catalog_rest_snpCount	121885	endometrial carcinoma			endometrial carcinoma
+GCST90435613	testicular cancer	cancer	SuSiE	13	28000000	gwas_catalog_rest_snpCount	404769	testicular cancer			testicular cancer
+FINNGEN_R12_C3_CLL_EXALLC	chronic lymphocytic leukemia	cancer	SuSiE	11	21311942	finngen_r12_cohort_constant	379677	chronic lymphocytic leukemia			chronic lymphocytic leukemia
+GCST90475994	abdominal aortic aneurysm	cardiometabolic	SuSiE	45	44300000	gwas_catalog_rest_snpCount	443400	abdominal aortic aneurysm			abdominal aortic aneurysm
+FINNGEN_R12_I9_VTE	venous thromboembolism	cardiometabolic	SuSiE	65	21311942	finngen_r12_cohort_constant	500348	venous thromboembolism			venous thromboembolism
+FINNGEN_R12_I9_VARICVE	varicose veins	cardiometabolic	SuSiE	225	21311942	finngen_r12_cohort_constant	470690	varicose veins			varicose veins
+GCST90475993	aortic aneurysm	cardiometabolic	SuSiE	61	44300000	gwas_catalog_rest_snpCount	441700	aortic aneurysm			aortic aneurysm
+GCST009758	idiopathic pulmonary fibrosis	allergic_respiratory	SuSiE	18	10790934	gwas_catalog_rest_snpCount	11259	idiopathic pulmonary fibrosis			idiopathic pulmonary fibrosis
+FINNGEN_R12_D3_SARCOIDOSIS	sarcoidosis	autoimmune	SuSiE	20	21311942	finngen_r12_cohort_constant	497722	sarcoidosis			sarcoidosis
+GCST90245818	acne	dermatological	SuSiE	21	6438339	gwas_catalog_rest_snpCount	399413	acne			acne
+GCST90476178	rosacea	dermatological	SuSiE	20	44300000	gwas_catalog_rest_snpCount	442187	rosacea			rosacea
+GCST90475497	monocyte	hematological	SuSiE-inf	28	44300000	gwas_catalog_rest_snpCount	37339	monocyte	maximum	AMR	monocyte (absolute count, maximum)
+GCST90475498	monocyte	hematological	SuSiE-inf	153	44300000	gwas_catalog_rest_snpCount	73039	monocyte	maximum	AFR	monocyte (absolute count, maximum)
+GCST90475499	monocyte	hematological	SuSiE-inf	600	44300000	gwas_catalog_rest_snpCount	259269	monocyte	maximum	EUR	monocyte (absolute count, maximum)
+GCST90475500	monocyte	hematological	SuSiE-inf	52	44300000	gwas_catalog_rest_snpCount	37364	monocyte	mean	AMR	monocyte (absolute count, mean)
+GCST90475501	monocyte	hematological	SuSiE-inf	311	44300000	gwas_catalog_rest_snpCount	73140	monocyte	mean	AFR	monocyte (absolute count, mean)
+GCST90475502	monocyte	hematological	SuSiE-inf	1250	44300000	gwas_catalog_rest_snpCount	259608	monocyte	mean	EUR	monocyte (absolute count, mean)
+GCST90475503	monocyte	hematological	SuSiE-inf	37	44300000	gwas_catalog_rest_snpCount	37368	monocyte	minimum	AMR	monocyte (absolute count, minimum)
+GCST90475504	monocyte	hematological	SuSiE-inf	271	44300000	gwas_catalog_rest_snpCount	73142	monocyte	minimum	AFR	monocyte (absolute count, minimum)
+GCST90475505	monocyte	hematological	SuSiE-inf	630	44300000	gwas_catalog_rest_snpCount	259625	monocyte	minimum	EUR	monocyte (absolute count, minimum)
+GCST90475506	monocyte	hematological	SuSiE-inf	41	44300000	gwas_catalog_rest_snpCount	45327	monocyte	maximum	AMR	monocyte (fraction, maximum)
+GCST90475507	monocyte	hematological	SuSiE-inf	165	44300000	gwas_catalog_rest_snpCount	82924	monocyte	maximum	AFR	monocyte (fraction, maximum)
+GCST90475508	monocyte	hematological	SuSiE-inf	735	44300000	gwas_catalog_rest_snpCount	296975	monocyte	maximum	EUR	monocyte (fraction, maximum)
+GCST90475509	monocyte	hematological	SuSiE-inf	69	44300000	gwas_catalog_rest_snpCount	45327	monocyte	mean	AMR	monocyte (fraction, mean)
+GCST90475510	monocyte	hematological	SuSiE-inf	408	44300000	gwas_catalog_rest_snpCount	82924	monocyte	mean	AFR	monocyte (fraction, mean)
+GCST90475511	monocyte	hematological	SuSiE-inf	1446	44300000	gwas_catalog_rest_snpCount	296975	monocyte	mean	EUR	monocyte (fraction, mean)
+GCST90475512	monocyte	hematological	SuSiE-inf	25	44300000	gwas_catalog_rest_snpCount	45327	monocyte	minimum	AMR	monocyte (fraction, minimum)
+GCST90475513	monocyte	hematological	SuSiE-inf	205	44300000	gwas_catalog_rest_snpCount	82924	monocyte	minimum	AFR	monocyte (fraction, minimum)
+GCST90475514	monocyte	hematological	SuSiE-inf	550	44300000	gwas_catalog_rest_snpCount	296975	monocyte	minimum	EUR	monocyte (fraction, minimum)
+GCST90475524	neutrophil	hematological	SuSiE-inf	22	44300000	gwas_catalog_rest_snpCount	36913	neutrophil	maximum	AMR	neutrophil (absolute count, maximum)
+GCST90475525	neutrophil	hematological	SuSiE-inf	413	44300000	gwas_catalog_rest_snpCount	72245	neutrophil	maximum	AFR	neutrophil (absolute count, maximum)
+GCST90475526	neutrophil	hematological	SuSiE-inf	184	44300000	gwas_catalog_rest_snpCount	274370	neutrophil	maximum	EUR	neutrophil (absolute count, maximum)
+GCST90475527	neutrophil	hematological	SuSiE-inf	34	44300000	gwas_catalog_rest_snpCount	37000	neutrophil	mean	AMR	neutrophil (absolute count, mean)
+GCST90475528	neutrophil	hematological	SuSiE-inf	237	44300000	gwas_catalog_rest_snpCount	73258	neutrophil	mean	AFR	neutrophil (absolute count, mean)
+GCST90475529	neutrophil	hematological	SuSiE-inf	343	44300000	gwas_catalog_rest_snpCount	275053	neutrophil	mean	EUR	neutrophil (absolute count, mean)
+GCST90475530	neutrophil	hematological	SuSiE-inf	34	44300000	gwas_catalog_rest_snpCount	37043	neutrophil	minimum	AMR	neutrophil (absolute count, minimum)
+GCST90475531	neutrophil	hematological	SuSiE-inf	856	44300000	gwas_catalog_rest_snpCount	74049	neutrophil	minimum	AFR	neutrophil (absolute count, minimum)
+GCST90475532	neutrophil	hematological	SuSiE-inf	287	44300000	gwas_catalog_rest_snpCount	275068	neutrophil	minimum	EUR	neutrophil (absolute count, minimum)
+GCST90475533	neutrophil	hematological	SuSiE-inf	11	44300000	gwas_catalog_rest_snpCount	38543	neutrophil	maximum	AMR	neutrophil (fraction, maximum)
+GCST90475534	neutrophil	hematological	SuSiE-inf	249	44300000	gwas_catalog_rest_snpCount	65556	neutrophil	maximum	AFR	neutrophil (fraction, maximum)
+GCST90475535	neutrophil	hematological	SuSiE-inf	118	44300000	gwas_catalog_rest_snpCount	261863	neutrophil	maximum	EUR	neutrophil (fraction, maximum)
+GCST90475536	neutrophil	hematological	SuSiE-inf	27	44300000	gwas_catalog_rest_snpCount	38542	neutrophil	mean	AMR	neutrophil (fraction, mean)
+GCST90475537	neutrophil	hematological	SuSiE-inf	538	44300000	gwas_catalog_rest_snpCount	65554	neutrophil	mean	AFR	neutrophil (fraction, mean)
+GCST90475538	neutrophil	hematological	SuSiE-inf	304	44300000	gwas_catalog_rest_snpCount	261847	neutrophil	mean	EUR	neutrophil (fraction, mean)
+GCST90475539	neutrophil	hematological	SuSiE-inf	27	44300000	gwas_catalog_rest_snpCount	38543	neutrophil	minimum	AMR	neutrophil (fraction, minimum)
+GCST90475540	neutrophil	hematological	SuSiE-inf	585	44300000	gwas_catalog_rest_snpCount	65556	neutrophil	minimum	AFR	neutrophil (fraction, minimum)
+GCST90475541	neutrophil	hematological	SuSiE-inf	374	44300000	gwas_catalog_rest_snpCount	261863	neutrophil	minimum	EUR	neutrophil (fraction, minimum)
+GCST90475421	lymphocyte	hematological	SuSiE-inf	15	44300000	gwas_catalog_rest_snpCount	36516	lymphocyte	maximum	AMR	lymphocyte (absolute count, maximum)
+GCST90475422	lymphocyte	hematological	SuSiE-inf	46	44300000	gwas_catalog_rest_snpCount	70548	lymphocyte	maximum	AFR	lymphocyte (absolute count, maximum)
+GCST90475423	lymphocyte	hematological	SuSiE-inf	490	44300000	gwas_catalog_rest_snpCount	253142	lymphocyte	maximum	EUR	lymphocyte (absolute count, maximum)
+GCST90475424	lymphocyte	hematological	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	36536	lymphocyte	mean	AMR	lymphocyte (absolute count, mean)
+GCST90475425	lymphocyte	hematological	SuSiE-inf	41	44300000	gwas_catalog_rest_snpCount	70580	lymphocyte	mean	AFR	lymphocyte (absolute count, mean)
+GCST90475426	lymphocyte	hematological	SuSiE-inf	524	44300000	gwas_catalog_rest_snpCount	253317	lymphocyte	mean	EUR	lymphocyte (absolute count, mean)
+GCST90475428	lymphocyte	hematological	SuSiE-inf	28	44300000	gwas_catalog_rest_snpCount	70597	lymphocyte	minimum	AFR	lymphocyte (absolute count, minimum)
+GCST90475429	lymphocyte	hematological	SuSiE-inf	197	44300000	gwas_catalog_rest_snpCount	253480	lymphocyte	minimum	EUR	lymphocyte (absolute count, minimum)
+GCST90475430	lymphocyte	hematological	SuSiE-inf	26	44300000	gwas_catalog_rest_snpCount	40768	lymphocyte	maximum	AMR	lymphocyte (fraction, maximum)
+GCST90475431	lymphocyte	hematological	SuSiE-inf	489	44300000	gwas_catalog_rest_snpCount	81257	lymphocyte	maximum	AFR	lymphocyte (fraction, maximum)
+GCST90475432	lymphocyte	hematological	SuSiE-inf	403	44300000	gwas_catalog_rest_snpCount	290958	lymphocyte	maximum	EUR	lymphocyte (fraction, maximum)
+GCST90475433	lymphocyte	hematological	SuSiE-inf	29	44300000	gwas_catalog_rest_snpCount	40768	lymphocyte	mean	AMR	lymphocyte (fraction, mean)
+GCST90475434	lymphocyte	hematological	SuSiE-inf	455	44300000	gwas_catalog_rest_snpCount	81257	lymphocyte	mean	AFR	lymphocyte (fraction, mean)
+GCST90475435	lymphocyte	hematological	SuSiE-inf	291	44300000	gwas_catalog_rest_snpCount	290958	lymphocyte	mean	EUR	lymphocyte (fraction, mean)
+GCST90475437	lymphocyte	hematological	SuSiE-inf	238	44300000	gwas_catalog_rest_snpCount	81257	lymphocyte	minimum	AFR	lymphocyte (fraction, minimum)
+GCST90475438	lymphocyte	hematological	SuSiE-inf	106	44300000	gwas_catalog_rest_snpCount	290958	lymphocyte	minimum	EUR	lymphocyte (fraction, minimum)
+GCST90475286	eosinophil	hematological	SuSiE-inf	32	44300000	gwas_catalog_rest_snpCount	42380	eosinophil	maximum	AMR	eosinophil (absolute count, maximum)
+GCST90475287	eosinophil	hematological	SuSiE-inf	67	44300000	gwas_catalog_rest_snpCount	90403	eosinophil	maximum	AFR	eosinophil (absolute count, maximum)
+GCST90475288	eosinophil	hematological	SuSiE-inf	892	44300000	gwas_catalog_rest_snpCount	310588	eosinophil	maximum	EUR	eosinophil (absolute count, maximum)
+GCST90475289	eosinophil	hematological	SuSiE-inf	41	44300000	gwas_catalog_rest_snpCount	42397	eosinophil	mean	AMR	eosinophil (absolute count, mean)
+GCST90475290	eosinophil	hematological	SuSiE-inf	138	44300000	gwas_catalog_rest_snpCount	90448	eosinophil	mean	AFR	eosinophil (absolute count, mean)
+GCST90475291	eosinophil	hematological	SuSiE-inf	1150	44300000	gwas_catalog_rest_snpCount	310757	eosinophil	mean	EUR	eosinophil (absolute count, mean)
+GCST90475292	eosinophil	hematological	SuSiE-inf	14	44300000	gwas_catalog_rest_snpCount	42403	eosinophil	minimum	AMR	eosinophil (absolute count, minimum)
+GCST90475293	eosinophil	hematological	SuSiE-inf	45	44300000	gwas_catalog_rest_snpCount	90479	eosinophil	minimum	AFR	eosinophil (absolute count, minimum)
+GCST90475294	eosinophil	hematological	SuSiE-inf	361	44300000	gwas_catalog_rest_snpCount	310849	eosinophil	minimum	EUR	eosinophil (absolute count, minimum)
+GCST90475295	eosinophil	hematological	SuSiE-inf	32	44300000	gwas_catalog_rest_snpCount	47410	eosinophil	maximum	AMR	eosinophil (fraction, maximum)
+GCST90475296	eosinophil	hematological	SuSiE-inf	229	44300000	gwas_catalog_rest_snpCount	98055	eosinophil	maximum	AFR	eosinophil (fraction, maximum)
+GCST90475297	eosinophil	hematological	SuSiE-inf	460	44300000	gwas_catalog_rest_snpCount	335542	eosinophil	maximum	EUR	eosinophil (fraction, maximum)
+GCST90475298	eosinophil	hematological	SuSiE-inf	42	44300000	gwas_catalog_rest_snpCount	47410	eosinophil	mean	AMR	eosinophil (fraction, mean)
+GCST90475299	eosinophil	hematological	SuSiE-inf	186	44300000	gwas_catalog_rest_snpCount	98055	eosinophil	mean	AFR	eosinophil (fraction, mean)
+GCST90475300	eosinophil	hematological	SuSiE-inf	1184	44300000	gwas_catalog_rest_snpCount	335542	eosinophil	mean	EUR	eosinophil (fraction, mean)
+GCST90475301	eosinophil	hematological	SuSiE-inf	16	44300000	gwas_catalog_rest_snpCount	47410	eosinophil	minimum	AMR	eosinophil (fraction, minimum)
+GCST90475302	eosinophil	hematological	SuSiE-inf	99	44300000	gwas_catalog_rest_snpCount	98055	eosinophil	minimum	AFR	eosinophil (fraction, minimum)
+GCST90475303	eosinophil	hematological	SuSiE-inf	255	44300000	gwas_catalog_rest_snpCount	335542	eosinophil	minimum	EUR	eosinophil (fraction, minimum)
+GCST90476342	RBC_count	hematological	SuSiE-inf	50	44300000	gwas_catalog_rest_snpCount	55750	RBC_count	maximum	AMR	RBC_count (RBC, maximum)
+GCST90476344	RBC_count	hematological	SuSiE-inf	157	44300000	gwas_catalog_rest_snpCount	114767	RBC_count	maximum	AFR	RBC_count (RBC, maximum)
+GCST90476345	RBC_count	hematological	SuSiE-inf	1833	44300000	gwas_catalog_rest_snpCount	405357	RBC_count	maximum	EUR	RBC_count (RBC, maximum)
+GCST90476346	RBC_count	hematological	SuSiE-inf	44	44300000	gwas_catalog_rest_snpCount	55750	RBC_count	mean	AMR	RBC_count (RBC, mean)
+GCST90476348	RBC_count	hematological	SuSiE-inf	120	44300000	gwas_catalog_rest_snpCount	114768	RBC_count	mean	AFR	RBC_count (RBC, mean)
+GCST90476349	RBC_count	hematological	SuSiE-inf	1451	44300000	gwas_catalog_rest_snpCount	405366	RBC_count	mean	EUR	RBC_count (RBC, mean)
+GCST90476350	RBC_count	hematological	SuSiE-inf	26	44300000	gwas_catalog_rest_snpCount	55750	RBC_count	minimum	AMR	RBC_count (RBC, minimum)
+GCST90476352	RBC_count	hematological	SuSiE-inf	63	44300000	gwas_catalog_rest_snpCount	114768	RBC_count	minimum	AFR	RBC_count (RBC, minimum)
+GCST90476353	RBC_count	hematological	SuSiE-inf	404	44300000	gwas_catalog_rest_snpCount	405369	RBC_count	minimum	EUR	RBC_count (RBC, minimum)
+GCST90476294	platelet_count	hematological	SuSiE-inf	54	44300000	gwas_catalog_rest_snpCount	55712	platelet_count	maximum	AMR	platelet_count (maximum)
+GCST90476295	platelet_count	hematological	SuSiE-inf	199	44300000	gwas_catalog_rest_snpCount	114580	platelet_count	maximum	AFR	platelet_count (maximum)
+GCST90476296	platelet_count	hematological	SuSiE-inf	1081	44300000	gwas_catalog_rest_snpCount	406601	platelet_count	maximum	EUR	platelet_count (maximum)
+GCST90476297	platelet_count	hematological	SuSiE-inf	83	44300000	gwas_catalog_rest_snpCount	55759	platelet_count	mean	AMR	platelet_count (mean)
+GCST90476298	platelet_count	hematological	SuSiE-inf	368	44300000	gwas_catalog_rest_snpCount	235	platelet_count	mean	AFR	platelet_count (mean)
+GCST90476299	platelet_count	hematological	SuSiE-inf	1457	44300000	gwas_catalog_rest_snpCount	407021	platelet_count	mean	EUR	platelet_count (mean)
+GCST90476300	platelet_count	hematological	SuSiE-inf	64	44300000	gwas_catalog_rest_snpCount	55776	platelet_count	minimum	AMR	platelet_count (minimum)
+GCST90476301	platelet_count	hematological	SuSiE-inf	221	44300000	gwas_catalog_rest_snpCount	114799	platelet_count	minimum	AFR	platelet_count (minimum)
+GCST90476302	platelet_count	hematological	SuSiE-inf	1103	44300000	gwas_catalog_rest_snpCount	407168	platelet_count	minimum	EUR	platelet_count (minimum)
+GCST90475369	hemoglobin	hematological	SuSiE-inf	26	44300000	gwas_catalog_rest_snpCount	55834	hemoglobin	maximum	AMR	hemoglobin (maximum)
+GCST90475371	hemoglobin	hematological	SuSiE-inf	77	44300000	gwas_catalog_rest_snpCount	114984	hemoglobin	maximum	AFR	hemoglobin (maximum)
+GCST90475372	hemoglobin	hematological	SuSiE-inf	926	44300000	gwas_catalog_rest_snpCount	407887	hemoglobin	maximum	EUR	hemoglobin (maximum)
+GCST90475373	hemoglobin	hematological	SuSiE-inf	17	44300000	gwas_catalog_rest_snpCount	55838	hemoglobin	mean	AMR	hemoglobin (mean)
+GCST90475375	hemoglobin	hematological	SuSiE-inf	48	44300000	gwas_catalog_rest_snpCount	114985	hemoglobin	mean	AFR	hemoglobin (mean)
+GCST90475376	hemoglobin	hematological	SuSiE-inf	626	44300000	gwas_catalog_rest_snpCount	407894	hemoglobin	mean	EUR	hemoglobin (mean)
+GCST90475379	hemoglobin	hematological	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	114985	hemoglobin	minimum	AFR	hemoglobin (minimum)
+GCST90475380	hemoglobin	hematological	SuSiE-inf	302	44300000	gwas_catalog_rest_snpCount	407894	hemoglobin	minimum	EUR	hemoglobin (minimum)
+GCST90475336	hematocrit	hematological	SuSiE-inf	21	44300000	gwas_catalog_rest_snpCount	55837	hematocrit	maximum	AMR	hematocrit (maximum)
+GCST90475337	hematocrit	hematological	SuSiE-inf	87	44300000	gwas_catalog_rest_snpCount	114986	hematocrit	maximum	AFR	hematocrit (maximum)
+GCST90475338	hematocrit	hematological	SuSiE-inf	600	44300000	gwas_catalog_rest_snpCount	407836	hematocrit	maximum	EUR	hematocrit (maximum)
+GCST90475339	hematocrit	hematological	SuSiE-inf	16	44300000	gwas_catalog_rest_snpCount	55841	hematocrit	mean	AMR	hematocrit (mean)
+GCST90475340	hematocrit	hematological	SuSiE-inf	71	44300000	gwas_catalog_rest_snpCount	114988	hematocrit	mean	AFR	hematocrit (mean)
+GCST90475341	hematocrit	hematological	SuSiE-inf	720	44300000	gwas_catalog_rest_snpCount	407852	hematocrit	mean	EUR	hematocrit (mean)
+GCST90475343	hematocrit	hematological	SuSiE-inf	28	44300000	gwas_catalog_rest_snpCount	114988	hematocrit	minimum	AFR	hematocrit (minimum)
+GCST90475344	hematocrit	hematological	SuSiE-inf	326	44300000	gwas_catalog_rest_snpCount	407854	hematocrit	minimum	EUR	hematocrit (minimum)
+GCST90475439	MCH	hematological	SuSiE-inf	79	44300000	gwas_catalog_rest_snpCount	55783	MCH	maximum	AMR	MCH (MCH, maximum)
+GCST90475441	MCH	hematological	SuSiE-inf	196	44300000	gwas_catalog_rest_snpCount	114852	MCH	maximum	AFR	MCH (MCH, maximum)
+GCST90475443	MCH	hematological	SuSiE-inf	80	44300000	gwas_catalog_rest_snpCount	55792	MCH	mean	AMR	MCH (MCH, mean)
+GCST90475445	MCH	hematological	SuSiE-inf	128	44300000	gwas_catalog_rest_snpCount	114855	MCH	mean	AFR	MCH (MCH, mean)
+GCST90475447	MCH	hematological	SuSiE-inf	66	44300000	gwas_catalog_rest_snpCount	55792	MCH	minimum	AMR	MCH (MCH, minimum)
+GCST90475449	MCH	hematological	SuSiE-inf	196	44300000	gwas_catalog_rest_snpCount	114836	MCH	minimum	AFR	MCH (MCH, minimum)
+GCST90475450	MCH	hematological	SuSiE-inf	1087	44300000	gwas_catalog_rest_snpCount	407317	MCH	minimum	EUR	MCH (MCH, minimum)
+GCST90475451	MCHC	hematological	SuSiE-inf	45	44300000	gwas_catalog_rest_snpCount	55793	MCHC	maximum	AMR	MCHC (MCHC, maximum)
+GCST90475453	MCHC	hematological	SuSiE-inf	128	44300000	gwas_catalog_rest_snpCount	114857	MCHC	maximum	AFR	MCHC (MCHC, maximum)
+GCST90475454	MCHC	hematological	SuSiE-inf	904	44300000	gwas_catalog_rest_snpCount	407343	MCHC	maximum	EUR	MCHC (MCHC, maximum)
+GCST90475455	MCHC	hematological	SuSiE-inf	49	44300000	gwas_catalog_rest_snpCount	55797	MCHC	mean	AMR	MCHC (MCHC, mean)
+GCST90475457	MCHC	hematological	SuSiE-inf	161	44300000	gwas_catalog_rest_snpCount	114851	MCHC	mean	AFR	MCHC (MCHC, mean)
+GCST90475458	MCHC	hematological	SuSiE-inf	657	44300000	gwas_catalog_rest_snpCount	407345	MCHC	mean	EUR	MCHC (MCHC, mean)
+GCST90475459	MCHC	hematological	SuSiE-inf	30	44300000	gwas_catalog_rest_snpCount	55798	MCHC	minimum	AMR	MCHC (MCHC, minimum)
+GCST90475461	MCHC	hematological	SuSiE-inf	59	44300000	gwas_catalog_rest_snpCount	114841	MCHC	minimum	AFR	MCHC (MCHC, minimum)
+GCST90475462	MCHC	hematological	SuSiE-inf	394	44300000	gwas_catalog_rest_snpCount	407301	MCHC	minimum	EUR	MCHC (MCHC, minimum)
+GCST90476354	RDW	hematological	SuSiE-inf	30	44300000	gwas_catalog_rest_snpCount	51877	RDW	maximum	AMR	RDW (RDW, maximum)
+GCST90476356	RDW	hematological	SuSiE-inf	70	44300000	gwas_catalog_rest_snpCount	110467	RDW	maximum	AFR	RDW (RDW, maximum)
+GCST90476357	RDW	hematological	SuSiE-inf	672	44300000	gwas_catalog_rest_snpCount	380351	RDW	maximum	EUR	RDW (RDW, maximum)
+GCST90476358	RDW	hematological	SuSiE-inf	45	44300000	gwas_catalog_rest_snpCount	51938	RDW	mean	AMR	RDW (RDW, mean)
+GCST90476360	RDW	hematological	SuSiE-inf	142	44300000	gwas_catalog_rest_snpCount	110558	RDW	mean	AFR	RDW (RDW, mean)
+GCST90476361	RDW	hematological	SuSiE-inf	1211	44300000	gwas_catalog_rest_snpCount	380796	RDW	mean	EUR	RDW (RDW, mean)
+GCST90476362	RDW	hematological	SuSiE-inf	63	44300000	gwas_catalog_rest_snpCount	51949	RDW	minimum	AMR	RDW (RDW, minimum)
+GCST90476364	RDW	hematological	SuSiE-inf	158	44300000	gwas_catalog_rest_snpCount	110610	RDW	minimum	AFR	RDW (RDW, minimum)
+GCST90476365	RDW	hematological	SuSiE-inf	1388	44300000	gwas_catalog_rest_snpCount	380819	RDW	minimum	EUR	RDW (RDW, minimum)
+GCST90475324	glucose	metabolic	SuSiE-inf	10	44300000	gwas_catalog_rest_snpCount	69705	glucose	maximum	EUR	glucose (finger stick, maximum)
+GCST90475326	glucose	metabolic	SuSiE-inf	12	44300000	gwas_catalog_rest_snpCount	69680	glucose	mean	EUR	glucose (finger stick, mean)
+GCST90475327	glucose	metabolic	SuSiE-inf	18	44300000	gwas_catalog_rest_snpCount	57272	glucose	maximum	AMR	glucose (fasting status unknown, maximum)
+GCST90475328	glucose	metabolic	SuSiE-inf	50	44300000	gwas_catalog_rest_snpCount	117850	glucose	maximum	AFR	glucose (fasting status unknown, maximum)
+GCST90475329	glucose	metabolic	SuSiE-inf	990	44300000	gwas_catalog_rest_snpCount	419671	glucose	maximum	EUR	glucose (fasting status unknown, maximum)
+GCST90475330	glucose	metabolic	SuSiE-inf	26	44300000	gwas_catalog_rest_snpCount	57284	glucose	mean	AMR	glucose (fasting status unknown, mean)
+GCST90475331	glucose	metabolic	SuSiE-inf	78	44300000	gwas_catalog_rest_snpCount	118233	glucose	mean	AFR	glucose (fasting status unknown, mean)
+GCST90475332	glucose	metabolic	SuSiE-inf	812	44300000	gwas_catalog_rest_snpCount	419946	glucose	mean	EUR	glucose (fasting status unknown, mean)
+GCST90475334	glucose	metabolic	SuSiE-inf	15	44300000	gwas_catalog_rest_snpCount	118147	glucose	minimum	AFR	glucose (fasting status unknown, minimum)
+GCST90475335	glucose	metabolic	SuSiE-inf	89	44300000	gwas_catalog_rest_snpCount	419287	glucose	minimum	EUR	glucose (fasting status unknown, minimum)
+GCST90475089	HbA1c	metabolic	SuSiE-inf	30	44300000	gwas_catalog_rest_snpCount	49229	HbA1c	maximum	AMR	HbA1c (HbA1c, maximum)
+GCST90475090	HbA1c	metabolic	SuSiE-inf	55	44300000	gwas_catalog_rest_snpCount	98772	HbA1c	maximum	AFR	HbA1c (HbA1c, maximum)
+GCST90475091	HbA1c	metabolic	SuSiE-inf	1525	44300000	gwas_catalog_rest_snpCount	338857	HbA1c	maximum	EUR	HbA1c (HbA1c, maximum)
+GCST90475092	HbA1c	metabolic	SuSiE-inf	31	44300000	gwas_catalog_rest_snpCount	49225	HbA1c	mean	AMR	HbA1c (HbA1c, mean)
+GCST90475093	HbA1c	metabolic	SuSiE-inf	62	44300000	gwas_catalog_rest_snpCount	98735	HbA1c	mean	AFR	HbA1c (HbA1c, mean)
+GCST90475094	HbA1c	metabolic	SuSiE-inf	1767	44300000	gwas_catalog_rest_snpCount	338848	HbA1c	mean	EUR	HbA1c (HbA1c, mean)
+GCST90475095	HbA1c	metabolic	SuSiE-inf	27	44300000	gwas_catalog_rest_snpCount	49152	HbA1c	minimum	AMR	HbA1c (HbA1c, minimum)
+GCST90475096	HbA1c	metabolic	SuSiE-inf	57	44300000	gwas_catalog_rest_snpCount	98578	HbA1c	minimum	AFR	HbA1c (HbA1c, minimum)
+GCST90475097	HbA1c	metabolic	SuSiE-inf	780	44300000	gwas_catalog_rest_snpCount	338640	HbA1c	minimum	EUR	HbA1c (HbA1c, minimum)
+GCST90475224	creatinine	clinical_chemistry	SuSiE-inf	13	44300000	gwas_catalog_rest_snpCount	57003	creatinine	maximum	AMR	creatinine (maximum)
+GCST90475225	creatinine	clinical_chemistry	SuSiE-inf	47	44300000	gwas_catalog_rest_snpCount	116285	creatinine	maximum	AFR	creatinine (maximum)
+GCST90475226	creatinine	clinical_chemistry	SuSiE-inf	539	44300000	gwas_catalog_rest_snpCount	420576	creatinine	maximum	EUR	creatinine (maximum)
+GCST90475227	creatinine	clinical_chemistry	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	57141	creatinine	mean	AMR	creatinine (mean)
+GCST90475228	creatinine	clinical_chemistry	SuSiE-inf	61	44300000	gwas_catalog_rest_snpCount	116707	creatinine	mean	AFR	creatinine (mean)
+GCST90475229	creatinine	clinical_chemistry	SuSiE-inf	1083	44300000	gwas_catalog_rest_snpCount	421411	creatinine	mean	EUR	creatinine (mean)
+GCST90475230	creatinine	clinical_chemistry	SuSiE-inf	18	44300000	gwas_catalog_rest_snpCount	57292	creatinine	minimum	AMR	creatinine (minimum)
+GCST90475231	creatinine	clinical_chemistry	SuSiE-inf	67	44300000	gwas_catalog_rest_snpCount	117108	creatinine	minimum	AFR	creatinine (minimum)
+GCST90475232	creatinine	clinical_chemistry	SuSiE-inf	933	44300000	gwas_catalog_rest_snpCount	421910	creatinine	minimum	EUR	creatinine (minimum)
+GCST90475161	BUN	clinical_chemistry	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	117530	BUN	maximum	AFR	BUN (BUN, maximum)
+GCST90475162	BUN	clinical_chemistry	SuSiE-inf	323	44300000	gwas_catalog_rest_snpCount	418135	BUN	maximum	EUR	BUN (BUN, maximum)
+GCST90475163	BUN	clinical_chemistry	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	57109	BUN	mean	AMR	BUN (BUN, mean)
+GCST90475164	BUN	clinical_chemistry	SuSiE-inf	46	44300000	gwas_catalog_rest_snpCount	117876	BUN	mean	AFR	BUN (BUN, mean)
+GCST90475165	BUN	clinical_chemistry	SuSiE-inf	724	44300000	gwas_catalog_rest_snpCount	418647	BUN	mean	EUR	BUN (BUN, mean)
+GCST90475166	BUN	clinical_chemistry	SuSiE-inf	13	44300000	gwas_catalog_rest_snpCount	57207	BUN	minimum	AMR	BUN (BUN, minimum)
+GCST90475167	BUN	clinical_chemistry	SuSiE-inf	22	44300000	gwas_catalog_rest_snpCount	118165	BUN	minimum	AFR	BUN (BUN, minimum)
+GCST90475168	BUN	clinical_chemistry	SuSiE-inf	450	44300000	gwas_catalog_rest_snpCount	419128	BUN	minimum	EUR	BUN (BUN, minimum)
+GCST90475099	albumin	clinical_chemistry	SuSiE-inf	24	44300000	gwas_catalog_rest_snpCount	110326	albumin	maximum	AFR	albumin (maximum)
+GCST90475100	albumin	clinical_chemistry	SuSiE-inf	223	44300000	gwas_catalog_rest_snpCount	372948	albumin	maximum	EUR	albumin (maximum)
+GCST90475101	albumin	clinical_chemistry	SuSiE-inf	11	44300000	gwas_catalog_rest_snpCount	53287	albumin	mean	AMR	albumin (mean)
+GCST90475102	albumin	clinical_chemistry	SuSiE-inf	27	44300000	gwas_catalog_rest_snpCount	110320	albumin	mean	AFR	albumin (mean)
+GCST90475103	albumin	clinical_chemistry	SuSiE-inf	322	44300000	gwas_catalog_rest_snpCount	372962	albumin	mean	EUR	albumin (mean)
+GCST90475106	albumin	clinical_chemistry	SuSiE-inf	125	44300000	gwas_catalog_rest_snpCount	372982	albumin	minimum	EUR	albumin (minimum)
+GCST90475107	ALT	clinical_chemistry	SuSiE-inf	17	44300000	gwas_catalog_rest_snpCount	56102	ALT	maximum	AMR	ALT (ALT, maximum)
+GCST90475108	ALT	clinical_chemistry	SuSiE-inf	28	44300000	gwas_catalog_rest_snpCount	115123	ALT	maximum	AFR	ALT (ALT, maximum)
+GCST90475109	ALT	clinical_chemistry	SuSiE-inf	266	44300000	gwas_catalog_rest_snpCount	406783	ALT	maximum	EUR	ALT (ALT, maximum)
+GCST90475110	ALT	clinical_chemistry	SuSiE-inf	18	44300000	gwas_catalog_rest_snpCount	56001	ALT	mean	AMR	ALT (ALT, mean)
+GCST90475111	ALT	clinical_chemistry	SuSiE-inf	32	44300000	gwas_catalog_rest_snpCount	115128	ALT	mean	AFR	ALT (ALT, mean)
+GCST90475112	ALT	clinical_chemistry	SuSiE-inf	260	44300000	gwas_catalog_rest_snpCount	406803	ALT	mean	EUR	ALT (ALT, mean)
+GCST90475113	ALT	clinical_chemistry	SuSiE-inf	14	44300000	gwas_catalog_rest_snpCount	55858	ALT	minimum	AMR	ALT (ALT, minimum)
+GCST90475114	ALT	clinical_chemistry	SuSiE-inf	36	44300000	gwas_catalog_rest_snpCount	115132	ALT	minimum	AFR	ALT (ALT, minimum)
+GCST90475115	ALT	clinical_chemistry	SuSiE-inf	293	44300000	gwas_catalog_rest_snpCount	406784	ALT	minimum	EUR	ALT (ALT, minimum)
+GCST90475116	AST	clinical_chemistry	SuSiE-inf	13	44300000	gwas_catalog_rest_snpCount	54332	AST	maximum	AMR	AST (AST, maximum)
+GCST90475117	AST	clinical_chemistry	SuSiE-inf	12	44300000	gwas_catalog_rest_snpCount	112550	AST	maximum	AFR	AST (AST, maximum)
+GCST90475118	AST	clinical_chemistry	SuSiE-inf	200	44300000	gwas_catalog_rest_snpCount	389396	AST	maximum	EUR	AST (AST, maximum)
+GCST90475119	AST	clinical_chemistry	SuSiE-inf	15	44300000	gwas_catalog_rest_snpCount	54250	AST	mean	AMR	AST (AST, mean)
+GCST90475120	AST	clinical_chemistry	SuSiE-inf	16	44300000	gwas_catalog_rest_snpCount	112429	AST	mean	AFR	AST (AST, mean)
+GCST90475121	AST	clinical_chemistry	SuSiE-inf	452	44300000	gwas_catalog_rest_snpCount	389192	AST	mean	EUR	AST (AST, mean)
+GCST90475122	AST	clinical_chemistry	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	54221	AST	minimum	AMR	AST (AST, minimum)
+GCST90475123	AST	clinical_chemistry	SuSiE-inf	17	44300000	gwas_catalog_rest_snpCount	112345	AST	minimum	AFR	AST (AST, minimum)
+GCST90475124	AST	clinical_chemistry	SuSiE-inf	465	44300000	gwas_catalog_rest_snpCount	389315	AST	minimum	EUR	AST (AST, minimum)
+GCST90475172	calcium	clinical_chemistry	SuSiE-inf	18	44300000	gwas_catalog_rest_snpCount	74104	calcium	maximum	AFR	calcium (maximum)
+GCST90475173	calcium	clinical_chemistry	SuSiE-inf	161	44300000	gwas_catalog_rest_snpCount	250919	calcium	maximum	EUR	calcium (maximum)
+GCST90475175	calcium	clinical_chemistry	SuSiE-inf	32	44300000	gwas_catalog_rest_snpCount	74137	calcium	mean	AFR	calcium (mean)
+GCST90475176	calcium	clinical_chemistry	SuSiE-inf	138	44300000	gwas_catalog_rest_snpCount	250885	calcium	mean	EUR	calcium (mean)
+GCST90475178	calcium	clinical_chemistry	SuSiE-inf	11	44300000	gwas_catalog_rest_snpCount	74760	calcium	minimum	AFR	calcium (minimum)
+GCST90475179	calcium	clinical_chemistry	SuSiE-inf	92	44300000	gwas_catalog_rest_snpCount	253072	calcium	minimum	EUR	calcium (minimum)
+GCST90476392	sodium	clinical_chemistry	SuSiE-inf	22	44300000	gwas_catalog_rest_snpCount	118412	sodium	maximum	AFR	sodium (maximum)
+GCST90476394	sodium	clinical_chemistry	SuSiE-inf	31	44300000	gwas_catalog_rest_snpCount	118487	sodium	mean	AFR	sodium (mean)
+GCST90476395	sodium	clinical_chemistry	SuSiE-inf	367	44300000	gwas_catalog_rest_snpCount	421240	sodium	mean	EUR	sodium (mean)
+GCST90476396	sodium	clinical_chemistry	SuSiE-inf	14	44300000	gwas_catalog_rest_snpCount	118415	sodium	minimum	AFR	sodium (minimum)
+GCST90476397	sodium	clinical_chemistry	SuSiE-inf	145	44300000	gwas_catalog_rest_snpCount	421073	sodium	minimum	EUR	sodium (minimum)
+GCST90479475	sodium	clinical_chemistry	SuSiE-inf	241	44300000	gwas_catalog_rest_snpCount	421132	sodium	maximum	EUR	sodium (maximum)
+GCST90476303	potassium	clinical_chemistry	SuSiE-inf	12	44300000	gwas_catalog_rest_snpCount	118330	potassium	maximum	AFR	potassium (maximum)
+GCST90476304	potassium	clinical_chemistry	SuSiE-inf	223	44300000	gwas_catalog_rest_snpCount	421297	potassium	maximum	EUR	potassium (maximum)
+GCST90476306	potassium	clinical_chemistry	SuSiE-inf	31	44300000	gwas_catalog_rest_snpCount	118506	potassium	mean	AFR	potassium (mean)
+GCST90476307	potassium	clinical_chemistry	SuSiE-inf	387	44300000	gwas_catalog_rest_snpCount	421503	potassium	mean	EUR	potassium (mean)
+GCST90476309	potassium	clinical_chemistry	SuSiE-inf	25	44300000	gwas_catalog_rest_snpCount	118507	potassium	minimum	AFR	potassium (minimum)
+GCST90476310	potassium	clinical_chemistry	SuSiE-inf	136	44300000	gwas_catalog_rest_snpCount	421506	potassium	minimum	EUR	potassium (minimum)
+GCST90475357	height	anthropometric	SuSiE-inf	259	44300000	gwas_catalog_rest_snpCount	57810	height	maximum	AMR	height (maximum)
+GCST90475358	height	anthropometric	SuSiE-inf	670	44300000	gwas_catalog_rest_snpCount	119011	height	maximum	AFR	height (maximum)
+GCST90475360	height	anthropometric	SuSiE-inf	286	44300000	gwas_catalog_rest_snpCount	57810	height	mean	AMR	height (mean)
+GCST90475361	height	anthropometric	SuSiE-inf	715	44300000	gwas_catalog_rest_snpCount	119012	height	mean	AFR	height (mean)
+GCST90475363	height	anthropometric	SuSiE-inf	241	44300000	gwas_catalog_rest_snpCount	57810	height	minimum	AMR	height (minimum)
+GCST90475364	height	anthropometric	SuSiE-inf	989	44300000	gwas_catalog_rest_snpCount	119012	height	minimum	AFR	height (minimum)
+GCST90475366	height	anthropometric	SuSiE-inf	38	44300000	gwas_catalog_rest_snpCount	27055	height		AMR	height (cm)
+GCST90475367	height	anthropometric	SuSiE-inf	171	44300000	gwas_catalog_rest_snpCount	51137	height		AFR	height (cm)
+GCST90476458	weight	anthropometric	SuSiE-inf	37	44300000	gwas_catalog_rest_snpCount	57954	weight	maximum	AMR	weight (maximum)
+GCST90476459	weight	anthropometric	SuSiE-inf	201	44300000	gwas_catalog_rest_snpCount	119284	weight	maximum	AFR	weight (maximum)
+GCST90476461	weight	anthropometric	SuSiE-inf	36	44300000	gwas_catalog_rest_snpCount	57954	weight	mean	AMR	weight (mean)
+GCST90476462	weight	anthropometric	SuSiE-inf	201	44300000	gwas_catalog_rest_snpCount	119279	weight	mean	AFR	weight (mean)
+GCST90476464	weight	anthropometric	SuSiE-inf	19	44300000	gwas_catalog_rest_snpCount	57954	weight	minimum	AMR	weight (minimum)
+GCST90476465	weight	anthropometric	SuSiE-inf	177	44300000	gwas_catalog_rest_snpCount	119286	weight	minimum	AFR	weight (minimum)
+GCST90476468	weight	anthropometric	SuSiE-inf	20	44300000	gwas_catalog_rest_snpCount	52481	weight		AFR	weight (pounds)
+GCST90476469	weight	anthropometric	SuSiE-inf	927	44300000	gwas_catalog_rest_snpCount	288216	weight		EUR	weight (pounds)
+GCST90476410	CK	clinical_chemistry	SuSiE-inf	48	44300000	gwas_catalog_rest_snpCount	82557	CK	maximum	EUR	CK (maximum)
+GCST90476413	CK	clinical_chemistry	SuSiE-inf	62	44300000	gwas_catalog_rest_snpCount	82594	CK	mean	EUR	CK (mean)
+GCST90476415	CK	clinical_chemistry	SuSiE-inf	10	44300000	gwas_catalog_rest_snpCount	24978	CK	minimum	AFR	CK (minimum)
+GCST90476416	CK	clinical_chemistry	SuSiE-inf	64	44300000	gwas_catalog_rest_snpCount	82569	CK	minimum	EUR	CK (minimum)
+FINNGEN_R12_T1D	Type 1 diabetes, definitions combined	autoimmune	SuSiE	33	21311942	finngen_r12_cohort_constant	408210	Type 1 diabetes		Finnish	Type 1 diabetes, definitions combined
+FINNGEN_R12_T1D_EARLY	Type1 diabetes, definitions combined, early onset	autoimmune	SuSiE	23	21311942	finngen_r12_cohort_constant	500348	Type 1 diabetes		Finnish	Type1 diabetes, definitions combined, early onset
+GCST000392	Type 1 diabetes	autoimmune	PICS	28	841622	gwas_catalog_rest_snpCount	16559	Type 1 diabetes		European	Type 1 diabetes
+GCST000507	Systemic lupus erythematosus	autoimmune	PICS	14	493955	gwas_catalog_rest_snpCount	2252	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
+GCST001191	Type 1 diabetes	autoimmune	PICS	13	10000000	fallback_10000000_no_gwas_catalog_count	19102	Type 1 diabetes		European	Type 1 diabetes
+GCST001795	Systemic lupus erythematosus	autoimmune	PICS	12	2100739	gwas_catalog_rest_snpCount	5050	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
+GCST003097	Pediatric autoimmune diseases	autoimmune	PICS	23	7347414	gwas_catalog_rest_snpCount	16753	Systemic lupus erythematosus;Type 1 diabetes		European	Pediatric autoimmune diseases
+GCST003155	Systemic lupus erythematosus	autoimmune	PICS	41	644674	gwas_catalog_rest_snpCount	14267	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST003156	Systemic lupus erythematosus	autoimmune	PICS;SuSiE-inf	37	644674	gwas_catalog_rest_snpCount	14267	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST003622	Systemic lupus erythematosus	autoimmune	PICS	30	6344733	gwas_catalog_rest_snpCount	16052	Systemic lupus erythematosus		East Asian;European	Systemic lupus erythematosus
+GCST004867	Systemic lupus erythematosus	autoimmune	PICS	11	2100000	gwas_catalog_rest_snpCount	9169	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST005536	Type 1 diabetes	autoimmune	PICS	27	135870	gwas_catalog_rest_snpCount	21526	Type 1 diabetes		European	Type 1 diabetes
+GCST005752	Systemic lupus erythematosus	autoimmune	PICS	43	5000000	gwas_catalog_rest_snpCount	27574	Systemic lupus erythematosus		African American or Afro-Caribbean;European;Hispanic or Latin American	Systemic lupus erythematosus
+GCST007400	Systemic lupus erythematosus	autoimmune	PICS	21	5000000	gwas_catalog_rest_snpCount	18264	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST010681	Type 1 diabetes	autoimmune	PICS;SuSiE-inf	114	9061522	gwas_catalog_rest_snpCount	24840	Type 1 diabetes		European	Type 1 diabetes
+GCST011096	Systemic lupus erythematosus	autoimmune	PICS	43	4633759	gwas_catalog_sumstats_original_rows	25268	Systemic lupus erythematosus		East Asian;European	Systemic lupus erythematosus
+GCST011956	Systemic lupus erythematosus	autoimmune	PICS	105	11270530	gwas_catalog_rest_snpCount	208370	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
+GCST90000529	Type 1 diabetes	autoimmune	PICS;SuSiE-inf	36	7769284	gwas_catalog_rest_snpCount	17685	Type 1 diabetes		European	Type 1 diabetes
+GCST90011866	Systemic lupus erythematosus	autoimmune	SuSiE-inf	67	5719137	gwas_catalog_rest_snpCount	12653	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
+GCST90013445	Type 1 diabetes	autoimmune	PICS	72	715631	gwas_catalog_rest_snpCount	59527	Type 1 diabetes		African unspecified;European;Other admixed ancestry	Type 1 diabetes
+GCST90013791	Type 1 diabetes	autoimmune	PICS	49	6294828	gwas_catalog_rest_snpCount	173981	Type 1 diabetes		European	Type 1 diabetes
+GCST90014462	Systemic lupus erythematosus	autoimmune	PICS;SuSiE-inf	40	9940918	gwas_catalog_rest_snpCount	324698	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST90014463	Systemic lupus erythematosus	autoimmune	PICS;SuSiE-inf	67	9940918	gwas_catalog_rest_snpCount	324436	Systemic lupus erythematosus		European	Systemic lupus erythematosus
+GCST90014464	Type 1 diabetes	autoimmune	PICS;SuSiE-inf	11	9940918	gwas_catalog_rest_snpCount	326825	Type 1 diabetes		European	Type 1 diabetes
+GCST90014465	Type 1 diabetes	autoimmune	PICS;SuSiE-inf	12	9940918	gwas_catalog_rest_snpCount	326366	Type 1 diabetes		European	Type 1 diabetes
+GCST90018925	Type 1 diabetes	autoimmune	PICS	14	25837106	gwas_catalog_rest_snpCount	590946	Type 1 diabetes		East Asian;European	Type 1 diabetes
+GCST90475661	Type 1 diabetes (PheCode 250.1)	autoimmune	PICS;SuSiE-inf	25	44300000	gwas_catalog_rest_snpCount	435738	Type 1 diabetes		European	Type 1 diabetes (PheCode 250.1)
+GCST90479877	Type 1 diabetes with ophthalmic manifestations (PheCode 250.13)	autoimmune	PICS	72	44300000	gwas_catalog_rest_snpCount	627819	Type 1 diabetes		African American or Afro-Caribbean;European;Hispanic or Latin American	Type 1 diabetes with ophthalmic manifestations (PheCode 250.13)
+GCST90479878	Type 1 diabetes with neurological manifestations (PheCode 250.14)	autoimmune	PICS	42	44300000	gwas_catalog_rest_snpCount	627732	Type 1 diabetes		African American or Afro-Caribbean;European;Hispanic or Latin American	Type 1 diabetes with neurological manifestations (PheCode 250.14)
+GCST90479879	Type 1 diabetes (PheCode 250.1)	autoimmune	PICS	22	44300000	gwas_catalog_rest_snpCount	609028	Type 1 diabetes		African American or Afro-Caribbean;European;Hispanic or Latin American	Type 1 diabetes (PheCode 250.1)
+GCST90480453	Systemic lupus erythematosus (PheCode 695.42)	autoimmune	PICS	115	44300000	gwas_catalog_rest_snpCount	632539	Systemic lupus erythematosus		African American or Afro-Caribbean;European;Hispanic or Latin American	Systemic lupus erythematosus (PheCode 695.42)
+GCST009597	Multiple sclerosis	autoimmune	PICS	140	8278136	gwas_catalog_rest_snpCount	41505	Multiple sclerosis		European;NR	Multiple sclerosis
+GCST90565134	Psoriasis	autoimmune	PICS	60	4160310	gwas_catalog_rest_snpCount	472819	Psoriasis		European;South Asian	Psoriasis
+GCST90013534	Rheumatoid arthritis	autoimmune	PICS	79	13810676	gwas_catalog_rest_snpCount	311292	Rheumatoid arthritis		East Asian;European	Rheumatoid arthritis
+FINNGEN_R12_AUTOIMMUNE_NONTHYROID	Autoimmune diseases excluding thyroid diseases	autoimmune	SuSiE	80	21311942	finngen_r12_cohort_constant	441659	Autoimmune disease		Finnish	Autoimmune diseases excluding thyroid diseases
+FINNGEN_R12_AUTOIMMUNE	Autoimmune diseases	autoimmune	SuSiE	203	21311942	finngen_r12_cohort_constant	500348	Autoimmune disease		Finnish	Autoimmune diseases
+FINNGEN_R12_CHRONNAS	Crohn's disease NAS	autoimmune	SuSiE	11	21311942	finngen_r12_cohort_constant	479179	Crohn's disease		Finnish	Crohn's disease NAS
+FINNGEN_R12_CHRONOTH	Other Crohn's disease	autoimmune	SuSiE	20	21311942	finngen_r12_cohort_constant	479396	Crohn's disease		Finnish	Other Crohn's disease
+FINNGEN_R12_CHRONSMALL	Crohn's disease of small intestine	autoimmune	SuSiE	12	21311942	finngen_r12_cohort_constant	479317	Crohn's disease		Finnish	Crohn's disease of small intestine
+FINNGEN_R12_K11_CD_STRICT2	Crohn disease (strict definition, require KELA, min 2 HDR)	autoimmune	SuSiE	13	21311942	finngen_r12_cohort_constant	500111	Crohn's disease		Finnish	Crohn disease (strict definition, require KELA, min 2 HDR)
+FINNGEN_R12_K11_ENERCOLNONINF	Noninfective enteritis and colitis	autoimmune	SuSiE	53	21311942	finngen_r12_cohort_constant	500348	Inflammatory bowel disease		Finnish	Noninfective enteritis and colitis
+FINNGEN_R12_K11_IBD_STRICT	Inflammatory bowel disease, strict (require KELA)	autoimmune	SuSiE	94	21311942	finngen_r12_cohort_constant	500348	Inflammatory bowel disease		Finnish	Inflammatory bowel disease, strict (require KELA)
+FINNGEN_R12_K11_UC_STRICT2	Ulcerative colitis (strict definition, require KELA, min 2 HDR)	autoimmune	SuSiE	55	21311942	finngen_r12_cohort_constant	499380	Ulcerative colitis		Finnish	Ulcerative colitis (strict definition, require KELA, min 2 HDR)
+FINNGEN_R12_MUCOPROCT	Mucosal proctocolitis	autoimmune	SuSiE	46	21311942	finngen_r12_cohort_constant	482115	Ulcerative colitis		Finnish	Mucosal proctocolitis
+FINNGEN_R12_RX_CROHN_1STLINE	First line medication for Crohn's disease	autoimmune	SuSiE	52	21311942	finngen_r12_cohort_constant	500348	Crohn's disease		Finnish	First line medication for Crohn's disease
+FINNGEN_R12_RX_CROHN_2NDLINE	Second line medication for Crohn's disease	autoimmune	SuSiE	37	21311942	finngen_r12_cohort_constant	500348	Crohn's disease		Finnish	Second line medication for Crohn's disease
+FINNGEN_R12_ULCERNAS	Ulcerative colitis, NAS	autoimmune	SuSiE	33	21311942	finngen_r12_cohort_constant	482657	Ulcerative colitis		Finnish	Ulcerative colitis, NAS
+FINNGEN_R12_ULCEROTH	Other ulcerative colitis	autoimmune	SuSiE	11	21311942	finngen_r12_cohort_constant	478858	Ulcerative colitis		Finnish	Other ulcerative colitis
+FINNGEN_R12_ULCERRECT	Ulcerative rectosigmoiditis	autoimmune	SuSiE	17	21311942	finngen_r12_cohort_constant	479968	Ulcerative colitis		Finnish	Ulcerative rectosigmoiditis
+GCST000207	Crohn's disease	autoimmune	PICS	30	635547	gwas_catalog_rest_snpCount	8059	Crohn's disease		European	Crohn's disease
+GCST000612	Celiac disease	autoimmune	PICS	10	292387	gwas_catalog_rest_snpCount	15283	Celiac disease		European	Celiac disease
+GCST000624	Ulcerative colitis	autoimmune	PICS	10	266047	gwas_catalog_rest_snpCount	9484	Ulcerative colitis		European	Ulcerative colitis
+GCST000879	Crohn's disease	autoimmune	PICS	66	953241	gwas_catalog_rest_snpCount	21389	Crohn's disease		European	Crohn's disease
+GCST000964	Ulcerative colitis	autoimmune	PICS	40	1100000	gwas_catalog_rest_snpCount	26405	Ulcerative colitis		European	Ulcerative colitis
+GCST001725	Inflammatory bowel disease	autoimmune	PICS	100	1230000	gwas_catalog_rest_snpCount	34366	Inflammatory bowel disease		European	Inflammatory bowel disease
+GCST001728	Ulcerative colitis	autoimmune	PICS	16	1230000	gwas_catalog_rest_snpCount	34366	Ulcerative colitis		European	Ulcerative colitis
+GCST001729	Crohn's disease	autoimmune	PICS	27	1230000	gwas_catalog_rest_snpCount	34366	Crohn's disease		European	Crohn's disease
+GCST004131	Inflammatory bowel disease	autoimmune	SuSiE-inf	128	9725440	gwas_catalog_rest_snpCount	59957	Inflammatory bowel disease		European;NR	Inflammatory bowel disease
+GCST004132	Crohn's disease	autoimmune	SuSiE-inf	100	9560910	gwas_catalog_rest_snpCount	40266	Crohn's disease		European;NR	Crohn's disease
+GCST004133	Ulcerative colitis	autoimmune	SuSiE-inf	64	9578670	gwas_catalog_rest_snpCount	45975	Ulcerative colitis		European;NR	Ulcerative colitis
+GCST005523	Celiac disease	autoimmune	PICS	32	139553	gwas_catalog_rest_snpCount	24269	Celiac disease		European;South Asian	Celiac disease
+GCST009874	Celiac disease	autoimmune	PICS	26	252970	gwas_catalog_rest_snpCount	33797	Celiac disease		European	Celiac disease
+GCST011501	Inflammatory bowel disease	autoimmune	PICS	20	8546065	gwas_catalog_rest_snpCount	456327	Inflammatory bowel disease		European	Inflammatory bowel disease
+GCST90014442	Celiac disease	autoimmune	SuSiE-inf	21	9940918	gwas_catalog_rest_snpCount	326438	Celiac disease		European	Celiac disease
+GCST90014443	Celiac disease	autoimmune	SuSiE-inf	18	9940918	gwas_catalog_rest_snpCount	325334	Celiac disease		European	Celiac disease
+GCST90014444	Inflammatory bowel disease	autoimmune	SuSiE-inf	15	9940918	gwas_catalog_rest_snpCount	329179	Inflammatory bowel disease		European	Inflammatory bowel disease
+GCST90014445	Inflammatory bowel disease	autoimmune	SuSiE-inf	12	9940918	gwas_catalog_rest_snpCount	327612	Inflammatory bowel disease		European	Inflammatory bowel disease
+GCST90018933	Ulcerative colitis	autoimmune	PICS	16	25840981	gwas_catalog_rest_snpCount	596621	Ulcerative colitis		East Asian;European	Ulcerative colitis
+GCST90038683	Inflammatory bowel disease	autoimmune	SuSiE-inf	15	9886868	gwas_catalog_rest_snpCount	484598	Inflammatory bowel disease		NR	Inflammatory bowel disease
+GCST90038684	Ulcerative colitis	autoimmune	SuSiE-inf	11	9886868	gwas_catalog_rest_snpCount	484598	Ulcerative colitis		NR	Ulcerative colitis
+GCST90129459	Ulcerative colitis	autoimmune	SuSiE-inf	15	11323612	gwas_catalog_rest_snpCount	203984	Ulcerative colitis		European	Ulcerative colitis
+GCST90319897	Crohn's disease	autoimmune	PICS	26	8950452	gwas_catalog_rest_snpCount	79121	Crohn's disease		East Asian	Crohn's disease
+GCST90432147	ICD10 K50, K51: inflammatory bowel disease	autoimmune	PICS	16	8573123	gwas_catalog_rest_snpCount	329707	Inflammatory bowel disease		European	ICD10 K50, K51: inflammatory bowel disease
+GCST90432182	Inflammatory bowel disease	autoimmune	SuSiE-inf	111	12582963	opentargets_sumstat_qc_n_variants	29849	Inflammatory bowel disease		East Asian	Inflammatory bowel disease
+GCST90436337	Ulcerative colitis (PheCode 555.2)	autoimmune	SuSiE-inf	10	28000000	gwas_catalog_rest_snpCount	337978	Ulcerative colitis		European	Ulcerative colitis (PheCode 555.2)
+GCST90436342	Celiac disease (PheCode 557.1)	autoimmune	SuSiE-inf	9	28000000	gwas_catalog_rest_snpCount	336638	Celiac disease		European	Celiac disease (PheCode 557.1)
+GCST90446793	Crohn's disease	autoimmune	SuSiE-inf	99	12589513	opentargets_sumstat_qc_n_variants	22828	Crohn's disease		East Asian	Crohn's disease
+GCST90446795	Ulcerative colitis	autoimmune	SuSiE-inf	63	12586202	opentargets_sumstat_qc_n_variants	22318	Ulcerative colitis		East Asian	Ulcerative colitis
+GCST90476065	Inflammatory bowel disease and other gasteroenteritis and colitis (PheCode 555)	autoimmune	SuSiE-inf	16	44300000	gwas_catalog_rest_snpCount	446753	Inflammatory bowel disease		European	Inflammatory bowel disease and other gasteroenteritis and colitis (PheCode 555)
+GCST90476067	Ulcerative colitis	autoimmune	SuSiE-inf	10	44300000	gwas_catalog_rest_snpCount	447331	Ulcerative colitis		European	Ulcerative colitis
+GCST90479614	Takes medication for celiac disease/sprue?	autoimmune	PICS	80	44300000	gwas_catalog_rest_snpCount	371173	Celiac disease		African American or Afro-Caribbean;European	Takes medication for celiac disease/sprue?
+GCST90479615	Takes medication for Crohn's disease?	autoimmune	PICS	18	44300000	gwas_catalog_rest_snpCount	371173	Crohn's disease		African American or Afro-Caribbean;European	Takes medication for Crohn's disease?
+GCST90479616	Crohn's disease	autoimmune	PICS	18	44300000	gwas_catalog_rest_snpCount	371173	Crohn's disease		African American or Afro-Caribbean;European	Crohn's disease
+GCST90479621	Takes medication for ulcerative colitis?	autoimmune	PICS	56	44300000	gwas_catalog_rest_snpCount	400487	Ulcerative colitis		African American or Afro-Caribbean;European;Hispanic or Latin American	Takes medication for ulcerative colitis?
+GCST90479622	Ulcerative colitis	autoimmune	PICS	29	44300000	gwas_catalog_rest_snpCount	400487	Ulcerative colitis		African American or Afro-Caribbean;European;Hispanic or Latin American	Ulcerative colitis
+GCST90480318	Ulcerative colitis (chronic) (PheCode 555.21)	autoimmune	PICS	149	44300000	gwas_catalog_rest_snpCount	629991	Ulcerative colitis		African American or Afro-Caribbean;European;Hispanic or Latin American	Ulcerative colitis (chronic) (PheCode 555.21)
+GCST90480319	Ulcerative colitis	autoimmune	PICS	30	44300000	gwas_catalog_rest_snpCount	627518	Ulcerative colitis		African American or Afro-Caribbean;European;Hispanic or Latin American	Ulcerative colitis
+GCST90480320	Inflammatory bowel disease and other gasteroenteritis and colitis (PheCode 555)	autoimmune	PICS	25	44300000	gwas_catalog_rest_snpCount	626677	Inflammatory bowel disease		African American or Afro-Caribbean;European;Hispanic or Latin American	Inflammatory bowel disease and other gasteroenteritis and colitis (PheCode 555)
+GCST90558088	Coeliac disease	autoimmune	PICS	12	7216568	gwas_catalog_rest_snpCount	337455	Celiac disease		European	Coeliac disease
