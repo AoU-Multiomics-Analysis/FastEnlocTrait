@@ -53,12 +53,14 @@ The primary WDL imports task modules from `workflows/tasks/`:
 
 ## GWAS Manifest
 
-The manifest must contain these columns:
+The manifest requires the core columns below and may also supply
+`canonical_trait`:
 
 | Column | Type | Description |
 | --- | --- | --- |
 | `study_id` | `String` | Primary key for the GWAS analysis unit. Must be unique and match `[A-Za-z0-9._-]+`. A leading `#study_id` header is also accepted. |
-| `trait` | `String` | Human-readable trait label. Validation trims and lowercases this label before downstream grouping. |
+| `trait` | `String` | Human-readable source trait label. Validation trims and lowercases this label before downstream grouping when `canonical_trait` is absent or empty. |
+| `canonical_trait` | `String` | Optional normalized trait label. When populated, it replaces `trait` for cross-study credible-set aggregation and downstream summaries. |
 | `n_variants` | `Int` | GWAS variant denominator passed to `fastenloc -total_variants`. |
 | `gwas_path` | `String` | URI or in-runtime path to the fastENLOC-format GWAS file. Supports `gs://`, HTTP(S), and local paths visible inside the task. |
 | `trait_category` | `String` | Non-empty user-defined grouping label. Validation trims and lowercases this label. |
@@ -66,10 +68,11 @@ The manifest must contain these columns:
 
 Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories. Each row should point to one trait/study analysis unit.
 
-The normalized manifest collapses repeated whitespace and lowercases `trait`
-and `trait_category`. Consequently, capitalization variants share a canonical
-trait label and are eligible for cross-study credible-set merging. `study_id`
-and `gwas_path` are not lowercased.
+When `canonical_trait` is present and non-empty, validation uses it as the
+effective `trait`. The normalized manifest then collapses repeated whitespace
+and lowercases the effective `trait` and `trait_category`. Consequently, aliases
+such as `height` and `body height` can share one trait label for cross-study
+credible-set merging. `study_id` and `gwas_path` are not lowercased.
 
 ## Example Inputs
 

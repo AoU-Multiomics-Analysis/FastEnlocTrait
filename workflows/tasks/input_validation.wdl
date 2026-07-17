@@ -26,6 +26,12 @@ task ValidateGWASManifest {
           stop("GWASManifest is missing required column(s): ", paste(missing, collapse = ", "))
         }
 
+        if ("canonical_trait" %in% names(manifest)) {
+          canonical <- trimws(manifest$canonical_trait)
+          use_canonical <- !is.na(canonical) & canonical != ""
+          manifest$trait[use_canonical] <- canonical[use_canonical]
+        }
+
         manifest <- manifest[, required]
         row_count <- nrow(manifest)
         if (row_count == 0) stop("GWASManifest must contain at least one data row")

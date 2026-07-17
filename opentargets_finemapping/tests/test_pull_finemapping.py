@@ -43,6 +43,8 @@ class PullFineMappingTests(unittest.TestCase):
         self.assertNotIn("gwas_path", headers)
         self.assertEqual(len({row["study_id"] for row in rows}), 400)
         self.assertNotIn("GCST003097", {row["study_id"] for row in rows})
+        height_row = next(row for row in rows if row["study_id"] == "GCST90691864")
+        self.assertEqual(height_row["canonical_trait"], "height")
         flagged = [
             row["trait"]
             for row in rows

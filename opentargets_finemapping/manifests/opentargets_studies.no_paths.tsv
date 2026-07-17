@@ -6,7 +6,7 @@ GCST90013970	allergic rhinitis	allergic_respiratory	SuSiE-inf	188	11914699	gwas_
 GCST90399686	asthma	allergic_respiratory	SuSiE-inf	167	27096526	gwas_catalog_sumstats_original_rows	1376071	asthma			asthma
 FINNGEN_R12_L12_ATOPIC	atopic dermatitis	allergic_respiratory	SuSie	98	21311942	finngen_r12_cohort_constant	464119	atopic dermatitis			atopic dermatitis
 GCST007692	chronic obstructive pulmonary disease	allergic_respiratory	PICS	67	6224355	gwas_catalog_rest_snpCount	257811	chronic obstructive pulmonary disease			chronic obstructive pulmonary disease
-GCST90691864	body height	anthropometric	SuSiE-inf	4830	23861814	gwas_catalog_rest_snpCount	419596	body height			body height
+GCST90691864	body height	anthropometric	SuSiE-inf	4830	23861814	gwas_catalog_rest_snpCount	419596	height			body height
 GCST90013870	body mass index	anthropometric	SuSiE-inf	723	11914699	gwas_catalog_rest_snpCount	407609	body mass index			body mass index
 GCST90475762	obesity	anthropometric	SuSiE-inf	419	44300000	gwas_catalog_rest_snpCount	413854	obesity			obesity
 FINNGEN_R12_K11_COELIAC	Celiac disease	autoimmune	SuSiE	31	21311942	finngen_r12_cohort_constant		Celiac disease			Celiac disease

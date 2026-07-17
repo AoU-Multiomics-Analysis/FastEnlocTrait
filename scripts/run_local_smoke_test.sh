@@ -79,6 +79,11 @@ selection_mode <- args[[5]]
 normalize_label <- function(x) {
   tolower(trimws(gsub("[[:space:]]+", " ", x)))
 }
+if ("canonical_trait" %in% names(manifest)) {
+  canonical <- trimws(manifest$canonical_trait)
+  use_canonical <- !is.na(canonical) & canonical != ""
+  manifest$trait[use_canonical] <- canonical[use_canonical]
+}
 ranked <- manifest |>
   mutate(n_credible_sets = as.integer(n_credible_sets),
          n_variants = as.integer(n_variants),
