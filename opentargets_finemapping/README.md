@@ -31,6 +31,8 @@ Open Targets.
   against its generated manifest row.
 - `../scripts/organize_gwas_release.py`: restore the established relative file
   layout from a prior manifest and atomically update current manifest/QC paths.
+- `../scripts/create_gcs_gwas_manifest.py`: create a cloud-ready manifest from
+  an organized local release without overwriting the validated local manifest.
 - `tests/test_pull_finemapping.py`: offline conversion and manifest tests.
 
 ## Requirements
@@ -108,6 +110,21 @@ python3 scripts/validate_gwas_manifest.py \
 
 Only the relative layout is inherited. Current methods, credible-set counts,
 and file contents remain those of the newly retrieved release.
+
+After the organized files are uploaded, create the manifest used by cloud WDL
+runs:
+
+```bash
+python3 scripts/create_gcs_gwas_manifest.py \
+  --manifest opentargets_pull/gwas_manifest.tsv \
+  --release-root opentargets_pull \
+  --gcs-prefix gs://YOUR_BUCKET/GWASColocDataV2 \
+  --out opentargets_pull/gwas_manifest.gcs.tsv
+```
+
+This command only rewrites paths in a new manifest; it does not upload files.
+Do not use the cloud manifest until the refreshed files have been uploaded and
+the corresponding objects verified.
 
 Every emitted credible-set identifier contains its chromosome, observed
 variant interval, and Open Targets `studyLocusId`, for example
