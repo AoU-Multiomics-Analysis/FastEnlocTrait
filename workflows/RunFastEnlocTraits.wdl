@@ -47,7 +47,8 @@ workflow RunFastenloc {
         call localize.LocalizeGWASData as LocalizeGWASData {
           input:
             gwas_path = ValidateGWASManifest.gwas_paths[localize_index],
-            study_id = ValidateGWASManifest.study_ids[localize_index]
+            study_id = ValidateGWASManifest.study_ids[localize_index],
+            expected_n_credible_sets = ValidateGWASManifest.n_credible_sets[localize_index]
         }
     }
 
@@ -251,6 +252,7 @@ workflow RunFastenloc {
       input:
         normalized_gwas_manifest = ValidateGWASManifest.normalized_manifest,
         localized_gwas_manifest = MergeCredibleSets.localized_manifest,
+        gwas_input_qc = LocalizeGWASData.gwas_input_qc,
         consensus_loci = MergeCredibleSets.consensus_map,
         consensus_loci_summary = MergeCredibleSets.consensus_summary,
         combined_gene = AggregateAllGene.combined,
@@ -282,6 +284,7 @@ workflow RunFastenloc {
     output {
       File normalized_gwas_manifest = ValidateGWASManifest.normalized_manifest
       File localized_gwas_manifest = MergeCredibleSets.localized_manifest
+      Array[File] gwas_input_qc_out = LocalizeGWASData.gwas_input_qc
       File consensus_loci_out = MergeCredibleSets.consensus_map
       File consensus_loci_summary_out = MergeCredibleSets.consensus_summary
       File combined_gene_out = AggregateAllGene.combined

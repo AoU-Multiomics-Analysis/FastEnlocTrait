@@ -79,6 +79,8 @@ TSVs, not the underlying analysis or complete summaries.
 Run the fastENLOC parsing and aggregation regression tests:
 
 ```bash
+python3 -m unittest tests/test_validate_fastenloc_gwas.py
+Rscript tests/test_merge_credible_set_validation.R
 bash tests/test_fastenloc_output_normalization.sh
 Rscript tests/test_fastenloc_parsing.R
 Rscript tests/test_gzip_aggregation.R

@@ -5,7 +5,8 @@ FastEnlocTrait is a WDL workflow for running colocalization across one or more G
 ## What the Workflow Does
 
 1. Validates a GWAS manifest and QTL layer labels.
-2. Localizes each manifest `gwas_path` inside the job.
+2. Localizes each manifest `gwas_path` inside the job and fails closed when
+   the observed credible-set IDs or counts do not match the manifest.
 3. Merges GWAS credible sets across studies of the same trait into consensus loci.
 4. Runs fastENLOC and CLPP for each GWAS/QTL pair in configurable GWAS shards.
 5. Aggregates per-GWAS, per-QTL, and all-GWAS outputs.

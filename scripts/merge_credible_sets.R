@@ -63,6 +63,47 @@ read_membership <- function(gwas_path, study_id, group_val) {
     distinct(group, study_id, gwas_cs, variant_id)
 }
 
+validate_membership <- function(memb, manifest = NULL) {
+  placeholder <- grepl(
+    "(_L(None|NA|NaN)$|chr([0-9]+|X|Y|M|MT)\\.0\\.0_)",
+    memb$gwas_cs,
+    ignore.case = TRUE
+  )
+  if (any(placeholder)) {
+    bad <- unique(memb$gwas_cs[placeholder])
+    stop(
+      "Placeholder/malformed credible-set ID(s) detected: ",
+      paste(head(bad, 10), collapse = ", "),
+      if (length(bad) > 10) paste0(" ... and ", length(bad) - 10, " more") else "",
+      ". Rebuild the GWAS fastENLOC input with distinct study-locus IDs.",
+      call. = FALSE
+    )
+  }
+  if (!is.null(manifest) && "n_credible_sets" %in% names(manifest)) {
+    expected <- manifest %>%
+      transmute(study_id, expected = as.integer(n_credible_sets))
+    observed <- memb %>%
+      distinct(study_id, gwas_cs) %>%
+      count(study_id, name = "observed")
+    audit <- expected %>%
+      left_join(observed, by = "study_id") %>%
+      mutate(observed = replace_na(observed, 0L))
+    mismatch <- audit %>% filter(expected != observed)
+    if (nrow(mismatch) > 0) {
+      detail <- paste0(
+        mismatch$study_id, " expected ", mismatch$expected,
+        " but observed ", mismatch$observed
+      )
+      stop(
+        "Manifest credible-set count mismatch: ",
+        paste(detail, collapse = "; "),
+        call. = FALSE
+      )
+    }
+  }
+  invisible(memb)
+}
+
 make_uf <- function(n) {
   parent <- seq_len(n)
   find <- function(i) {
@@ -163,6 +204,7 @@ main <- function() {
       read_membership(p, s, g)
     }
   )
+  validate_membership(memb_all, man)
 
   result <- memb_all %>%
     group_split(group) %>%

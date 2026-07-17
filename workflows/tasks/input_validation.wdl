@@ -52,7 +52,8 @@ task ValidateGWASManifest {
         fail_if(is.na(manifest$trait_category) | manifest$trait_category == "", "trait_category cannot be empty")
         fail_if(!grepl("^[0-9]+$", manifest$n_variants), "n_variants must be a positive integer")
         fail_if(as.integer(manifest$n_variants) < 1, "n_variants must be a positive integer")
-        fail_if(!grepl("^[0-9]+$", manifest$n_credible_sets), "n_credible_sets must be a non-negative integer")
+        fail_if(!grepl("^[0-9]+$", manifest$n_credible_sets), "n_credible_sets must be a positive integer")
+        fail_if(as.integer(manifest$n_credible_sets) < 1, "n_credible_sets must be a positive integer")
 
         manifest$n_variants <- as.integer(manifest$n_variants)
         manifest$n_credible_sets <- as.integer(manifest$n_credible_sets)

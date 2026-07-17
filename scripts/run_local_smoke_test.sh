@@ -60,7 +60,7 @@ elif ! command -v "$fastenloc_bin" >/dev/null 2>&1; then
   exit 1
 fi
 
-mkdir -p "$outdir"/{inputs,work,raw,clpp,harmonized,combined,raw_summaries,final_summaries,figures,logs}
+mkdir -p "$outdir"/{inputs,input_qc,work,raw,clpp,harmonized,combined,raw_summaries,final_summaries,figures,logs}
 selected_manifest="$outdir/inputs/selected_manifest.tsv"
 
 Rscript - "$source_manifest" "$relocation" "$open_targets_root" "$selected_manifest" "$selection_mode" <<'RSCRIPT'
@@ -119,6 +119,15 @@ message(
   " traits across ", n_distinct(selected$trait_category), " categories (", selection_mode, ")"
 )
 RSCRIPT
+
+tail -n +2 "$selected_manifest" |
+  while IFS=$'\t' read -r study_id trait n_variants gwas_path trait_category n_credible_sets; do
+    python3 "$pipeline_root/scripts/validate_fastenloc_gwas.py" \
+      --gwas "$gwas_path" \
+      --study-id "$study_id" \
+      --expected-credible-sets "$n_credible_sets" \
+      --out "$outdir/input_qc/${study_id}.gwas_input_qc.tsv"
+  done
 
 consensus="$outdir/combined/consensus_loci.tsv.gz"
 Rscript "$pipeline_root/scripts/merge_credible_sets.R" \

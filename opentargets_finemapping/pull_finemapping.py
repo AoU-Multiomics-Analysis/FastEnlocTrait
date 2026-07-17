@@ -459,7 +459,27 @@ def build_study_file(
                 f"{study_locus_id}: unexpected 95% credible-set PIP sum {pip_sum:.8f}"
             )
         pip_sums.append(pip_sum)
-        set_id = f"{study_id}_{study_locus_id}"
+        locus_chromosomes = {
+            str(row["variant"]["chromosome"]).removeprefix("chr")
+            for row in locus_rows
+        }
+        if len(locus_chromosomes) != 1:
+            raise RuntimeError(
+                f"{study_locus_id}: credible-set variants span chromosomes "
+                f"{sorted(locus_chromosomes)}"
+            )
+        locus_chromosome = next(iter(locus_chromosomes))
+        locus_start = min(int(row["variant"]["position"]) for row in locus_rows)
+        locus_end = max(int(row["variant"]["position"]) for row in locus_rows)
+        locus_token = slugify(study_locus_id)
+        locus_suffix = (
+            locus_token if locus_token.lower().startswith("l")
+            else f"L{locus_token}"
+        )
+        set_id = (
+            f"{study_id}_chr{locus_chromosome}."
+            f"{locus_start}.{locus_end}_{locus_suffix}"
+        )
         set_size = len(locus_rows)
         for row in locus_rows:
             variant = row["variant"]

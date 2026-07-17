@@ -4,6 +4,7 @@ task LocalizeGWASData {
     input {
         String gwas_path
         String study_id
+        Int expected_n_credible_sets
     }
 
     command <<<
@@ -39,10 +40,17 @@ task LocalizeGWASData {
             echo "Localized GWAS file is empty for ~{study_id}: ~{gwas_path}" >&2
             exit 1
         fi
+
+        python3 ~/validate_fastenloc_gwas.py \
+          --gwas "$out" \
+          --study-id "~{study_id}" \
+          --expected-credible-sets "~{expected_n_credible_sets}" \
+          --out "~{study_id}.gwas_input_qc.tsv"
     >>>
 
     output {
         File gwas_data = "~{study_id}.gwas.fastenloc.tsv.gz"
+        File gwas_input_qc = "~{study_id}.gwas_input_qc.tsv"
     }
 
     runtime {

@@ -72,6 +72,12 @@ The generated `gwas_manifest.tsv` contains absolute local `gwas_path` values
 and can be supplied directly as `RunFastenloc.GWASManifest` for a local WDL
 run.
 
+Every emitted credible-set identifier contains its chromosome, observed
+variant interval, and Open Targets `studyLocusId`, for example
+`GCST010571_chr1.2561226.2581666_L<studyLocusId>`. This prevents multiple
+fine-mapped sets on the same chromosome from collapsing into one consensus
+bucket.
+
 ## Test a subset first
 
 ```bash

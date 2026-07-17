@@ -136,6 +136,7 @@ task CollectHighLevelOutputs {
     input {
         File normalized_gwas_manifest
         File localized_gwas_manifest
+        Array[File] gwas_input_qc
         File consensus_loci
         File consensus_loci_summary
         File combined_gene
@@ -170,6 +171,7 @@ task CollectHighLevelOutputs {
         outdir="high_level_coloc_outputs"
         mkdir -p \
           "$outdir/manifests" \
+          "$outdir/input_qc" \
           "$outdir/consensus" \
           "$outdir/raw_fastenloc" \
           "$outdir/raw_summaries/per_qtl" \
@@ -179,6 +181,11 @@ task CollectHighLevelOutputs {
 
         cp "~{normalized_gwas_manifest}" "$outdir/manifests/normalized_gwas_manifest.tsv"
         cp "~{localized_gwas_manifest}" "$outdir/manifests/localized_gwas_manifest.tsv"
+        gwas_qc_files="~{write_lines(gwas_input_qc)}"
+        while read -r f; do
+          [ -n "$f" ] || continue
+          cp "$f" "$outdir/input_qc/$(basename "$f")"
+        done < "$gwas_qc_files"
 
         cp "~{consensus_loci}" "$outdir/consensus/consensus_loci.tsv.gz"
         cp "~{consensus_loci_summary}" "$outdir/consensus/consensus_loci.summary.tsv"

@@ -104,7 +104,9 @@ class PullFineMappingTests(unittest.TestCase):
                 lines = handle.readlines()
             self.assertEqual(len(lines), 2)
             self.assertTrue(lines[0].startswith("chr1\t100\tchr1_100_A_G\tA\tG\t"))
-            self.assertIn("Example_disease;TEST001_L1=", lines[0])
+            self.assertIn(
+                "Example_disease;TEST001_chr1.100.101_L1=", lines[0]
+            )
             self.assertEqual(qc["n_credible_sets_written"], 1)
             self.assertEqual(qc["n_fastenloc_rows"], 2)
 

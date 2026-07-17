@@ -62,7 +62,7 @@ The manifest must contain these columns:
 | `n_variants` | `Int` | GWAS variant denominator passed to `fastenloc -total_variants`. |
 | `gwas_path` | `String` | URI or in-runtime path to the fastENLOC-format GWAS file. Supports `gs://`, HTTP(S), and local paths visible inside the task. |
 | `trait_category` | `String` | Non-empty user-defined grouping label. Validation trims and lowercases this label. |
-| `n_credible_sets` | `Int` | Total fine-mapped GWAS credible-set denominator for this analysis unit. |
+| `n_credible_sets` | `Int` | Positive expected count of distinct fine-mapped GWAS credible sets; localization fails if the file does not match. |
 
 Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories. Each row should point to one trait/study analysis unit.
 
@@ -100,7 +100,12 @@ and `gwas_path` are not lowercased.
 
 The workflow first validates the GWAS manifest and QTL labels. It then runs a two-stage GWAS flow:
 
-1. `LocalizeGWASData` materializes the row's `gwas_path` as a job-local gzip file.
+1. `LocalizeGWASData` materializes the row's `gwas_path` as a job-local gzip
+   file and validates its six-column fastENLOC structure. It fails before any
+   colocalization if credible-set IDs are placeholders (for example
+   `_LNone`), annotation sizes/PIP sums are inconsistent, a set spans
+   chromosomes, or the number of distinct set IDs differs from the manifest's
+   `n_credible_sets`.
 2. `MergeCredibleSets` builds a localized manifest from those files and merges credible sets within each manifest `trait`.
 3. `CreateGWASShards` groups manifest rows into shard index files using `gwas_units_per_shard`.
 4. The workflow scatters over shards; each `RunColocShard` job runs fastENLOC and CLPP for several GWAS rows and every QTL layer, emitting raw outputs separated by `study_id` and `qtl_label`.
@@ -131,6 +136,7 @@ runs report their RCP, LCP, PIP, SNP, and credible-set fields correctly.
 | --- | --- |
 | `normalized_gwas_manifest` | Validated manifest normalized to the required column order. |
 | `localized_gwas_manifest` | Internal manifest used by `MergeCredibleSets`, with job-local GWAS file paths. |
+| `gwas_input_qc_out` | One validation audit TSV per localized GWAS file, including expected and observed credible-set counts. |
 | `consensus_loci_out` | Per-credible-set consensus map from `merge_credible_sets.R`. |
 | `consensus_loci_summary_out` | Per-trait summary of raw credible sets, consensus loci, and merged-away duplicate sets. |
 | `combined_gene_out` | All-GWAS/all-QTL combined `*.enloc.gene.out` results. |
