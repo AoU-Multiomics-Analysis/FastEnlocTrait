@@ -11,11 +11,13 @@ input_name="$1"
 output_name="$2"
 
 # fastENLOC data rows are fixed-width whitespace while its headers can contain
-# tabs (including empty spacer fields). Enrichment row labels contain spaces,
-# so preserve their label by reading the two metric fields from the right.
+# tabs (including empty spacer fields). The enrichment output is the exception:
+# it has no header, and its row labels can contain spaces. Give it a stable
+# header and preserve each label by reading the two metric fields from the
+# right.
 case "$input_name" in
     *.enloc.enrich.out)
-        awk 'BEGIN{OFS="\t"}
+        awk 'BEGIN{OFS="\t"; print "term", "estimate", "standard_error"}
             NF {
                 if (NF < 3) {
                     printf "Malformed fastENLOC enrichment row at line %d: expected at least 3 whitespace fields\n", NR > "/dev/stderr"
