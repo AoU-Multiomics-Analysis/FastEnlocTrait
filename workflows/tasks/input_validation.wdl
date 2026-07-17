@@ -30,6 +30,12 @@ task ValidateGWASManifest {
         row_count <- nrow(manifest)
         if (row_count == 0) stop("GWASManifest must contain at least one data row")
 
+        normalize_label <- function(x) {
+          tolower(trimws(gsub("[[:space:]]+", " ", x)))
+        }
+        manifest$trait <- normalize_label(manifest$trait)
+        manifest$trait_category <- normalize_label(manifest$trait_category)
+
         fail_if <- function(condition, message) {
           if (any(condition, na.rm = TRUE)) stop(message)
         }

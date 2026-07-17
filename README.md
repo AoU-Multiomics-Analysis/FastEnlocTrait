@@ -58,6 +58,12 @@ For a single QTL layer, provide one-element `QTLData` and `QTLLabels` arrays.
 
 `gwas_path` is localized inside each GWAS job. It can point to `gs://`, HTTP(S), or a path already accessible inside the task runtime. The Docker image includes `gsutil` for Google Cloud Storage paths. Each manifest row is expected to point to one trait/study analysis unit.
 
+During validation, `trait` and `trait_category` labels are trimmed, internal
+whitespace is collapsed, and text is converted to lowercase. This makes
+trait-level grouping case-insensitive, so studies labelled `Asthma` and
+`asthma` contribute to the same downstream trait and consensus-locus summary.
+Study IDs and paths retain their original case.
+
 `gwas_units_per_shard` controls how many manifest rows are processed by each raw fastENLOC/CLPP shard job. Harmonization still runs separately for each GWAS x QTL pair, so Bayesian FDR thresholds remain per GWAS analysis unit and QTL layer.
 
 ## Primary Outputs

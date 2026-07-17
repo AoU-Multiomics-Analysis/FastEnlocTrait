@@ -6,10 +6,10 @@ if [[ $# -lt 3 || $# -gt 5 ]]; then
   cat >&2 <<'USAGE'
 Usage: run_local_smoke_test.sh OPEN_TARGETS_ROOT QTL_DIR OUTPUT_DIR [FASTENLOC] [GTF]
 
-Selects GWAS inputs according to SELECTION_MODE (category_max by default),
-runs them against eQTL, sQTL, and pQTL, then follows the workflow's CLPP,
-consensus, harmonization, summary, and plotting logic. Existing pair outputs
-are reused when possible.
+Selects non-MTAG GWAS inputs according to SELECTION_MODE (category_max by
+default), runs them against eQTL, sQTL, and pQTL, then follows the workflow's
+CLPP, consensus, harmonization, summary, and plotting logic. Existing pair
+outputs are reused when possible.
 
 SELECTION_MODE may be category_max, trait_max, or all. The *_max modes keep
 the study with the most credible sets in each category or distinct trait.
@@ -76,9 +76,24 @@ paths <- fread(args[[2]]) |>
   transmute(study_id, local_source_path)
 
 selection_mode <- args[[5]]
+normalize_label <- function(x) {
+  tolower(trimws(gsub("[[:space:]]+", " ", x)))
+}
 ranked <- manifest |>
   mutate(n_credible_sets = as.integer(n_credible_sets),
-         n_variants = as.integer(n_variants))
+         n_variants = as.integer(n_variants),
+         trait = normalize_label(trait),
+         trait_category = normalize_label(trait_category))
+
+mtag_rows <- grepl("MTAG", ranked$trait, ignore.case = TRUE)
+if (any(mtag_rows)) {
+  message(
+    "Excluded ", sum(mtag_rows), " MTAG stud", ifelse(sum(mtag_rows) == 1, "y", "ies"),
+    ": ", paste(ranked$study_id[mtag_rows], collapse = ", ")
+  )
+}
+ranked <- ranked |>
+  filter(!mtag_rows)
 
 selected <- switch(
   selection_mode,

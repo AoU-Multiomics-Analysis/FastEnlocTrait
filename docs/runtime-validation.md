@@ -52,17 +52,23 @@ scripts/run_local_smoke_test.sh \
   /path/to/gencode.annotation.gtf.gz
 ```
 
-The runner selects the study with the most credible sets in each trait category, runs all three QTL layers, and preserves intermediate/raw data, logs, harmonized outputs, summaries, figures, and a QC table. It reuses completed pair outputs when rerun against the same output directory.
+The runner excludes studies whose trait label contains `MTAG`, selects the
+requested studies, runs all three QTL layers, and preserves intermediate/raw
+data, logs, harmonized outputs, summaries, figures, and a QC table. It reuses
+completed pair outputs when rerun against the same output directory.
+Like the WDL manifest-validation task, it trims, whitespace-normalizes, and
+lowercases trait and trait-category labels before selection and grouping.
 
 To run one representative study for every distinct trait, set
 `SELECTION_MODE=trait_max`. Use `SELECTION_MODE=all` to retain every manifest
-study. For each study, the eQTL, sQTL, and pQTL analyses run concurrently.
+study other than MTAG analyses. For each study, the eQTL, sQTL, and pQTL
+analyses run concurrently.
 
 ```bash
-SELECTION_MODE=trait_max scripts/run_local_smoke_test.sh \
+SELECTION_MODE=all scripts/run_local_smoke_test.sh \
   "/path/to/Open targets fine-mapping" \
   "/path/to/susie_files" \
-  test_runs/opentargets_all_traits \
+  test_runs/opentargets_all_studies_no_mtag \
   /path/to/fastenloc
 ```
 

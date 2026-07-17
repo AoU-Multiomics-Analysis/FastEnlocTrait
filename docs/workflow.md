@@ -58,13 +58,18 @@ The manifest must contain these columns:
 | Column | Type | Description |
 | --- | --- | --- |
 | `study_id` | `String` | Primary key for the GWAS analysis unit. Must be unique and match `[A-Za-z0-9._-]+`. A leading `#study_id` header is also accepted. |
-| `trait` | `String` | Human-readable trait label stamped into harmonized outputs. |
+| `trait` | `String` | Human-readable trait label. Validation trims and lowercases this label before downstream grouping. |
 | `n_variants` | `Int` | GWAS variant denominator passed to `fastenloc -total_variants`. |
 | `gwas_path` | `String` | URI or in-runtime path to the fastENLOC-format GWAS file. Supports `gs://`, HTTP(S), and local paths visible inside the task. |
-| `trait_category` | `String` | Non-empty user-defined grouping label for downstream summaries and figures. |
+| `trait_category` | `String` | Non-empty user-defined grouping label. Validation trims and lowercases this label. |
 | `n_credible_sets` | `Int` | Total fine-mapped GWAS credible-set denominator for this analysis unit. |
 
 Each manifest row is localized and analyzed independently, so different studies can use different `n_variants`, trait labels, and disease categories. Each row should point to one trait/study analysis unit.
+
+The normalized manifest collapses repeated whitespace and lowercases `trait`
+and `trait_category`. Consequently, capitalization variants share a canonical
+trait label and are eligible for cross-study credible-set merging. `study_id`
+and `gwas_path` are not lowercased.
 
 ## Example Inputs
 
