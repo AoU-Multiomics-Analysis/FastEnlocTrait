@@ -27,6 +27,8 @@ Open Targets.
 - `queries/credible_sets.graphql`: outer credible-set query with the first page
   of each nested locus.
 - `queries/credible_set_locus_page.graphql`: additional nested-locus pages.
+- `../scripts/validate_gwas_manifest.py`: bulk validation of every GWAS file
+  against its generated manifest row.
 - `tests/test_pull_finemapping.py`: offline conversion and manifest tests.
 
 ## Requirements
@@ -50,13 +52,15 @@ python3 opentargets_finemapping/pull_finemapping.py \
   --output-dir opentargets_pull
 ```
 
-For a current-release refresh where credible-set counts may legitimately differ
-from the checked-in snapshot, add `--allow-count-mismatch`. The generated QC
-table retains both the snapshot count and the newly written count:
+For a current-release refresh, use the current metadata to select exactly one
+fine-mapping method per study (SuSiE-inf, then SuSiE, then PICS), and allow
+counts to differ from the checked-in study snapshot:
 
 ```bash
 python3 opentargets_finemapping/pull_finemapping.py \
   --allow-count-mismatch \
+  --method-policy current-best \
+  --exclude-invalid-credible-sets \
   --output-dir opentargets_pull
 ```
 
@@ -65,12 +69,24 @@ The run writes:
 - `opentargets_pull/gwas/*.fastenloc.gwas.vcf.gz`
 - `opentargets_pull/gwas_manifest.tsv`
 - `opentargets_pull/retrieval_qc.tsv`
+- `opentargets_pull/source_snapshot_audit.tsv`
+- `opentargets_pull/excluded_credible_sets.tsv`
 - `opentargets_pull/provenance/credible_sets/*.json`
 - `opentargets_pull/provenance/locus_pages/*.json`
 
 The generated `gwas_manifest.tsv` contains absolute local `gwas_path` values
 and can be supplied directly as `RunFastenloc.GWASManifest` for a local WDL
-run.
+run. Its method and credible-set count describe the current file that was
+actually written. Historical method/count comparisons are kept out of the
+production manifest and isolated in `source_snapshot_audit.tsv`.
+
+Validate every generated file against that manifest before running WDL:
+
+```bash
+python3 scripts/validate_gwas_manifest.py \
+  --manifest opentargets_pull/gwas_manifest.tsv \
+  --out opentargets_pull/gwas_validation_qc.tsv
+```
 
 Every emitted credible-set identifier contains its chromosome, observed
 variant interval, and Open Targets `studyLocusId`, for example
@@ -100,15 +116,24 @@ pipeline from silently accepting API or schema changes. Useful controls:
 - `--keep-going`: record failed studies in `retrieval_qc.tsv` and continue.
 - `--allow-count-mismatch`: accept a current Open Targets credible-set count
   that differs from the checked-in snapshot.
+- `--method-policy current-best`: select one method from current Open Targets
+  metadata, preferring SuSiE-inf, then SuSiE, then PICS. This prevents
+  historical method-label drift from dropping a study and prevents alternative
+  PICS/SuSiE analyses from being combined.
+- `--exclude-invalid-credible-sets`: if a 95% credible-set row lacks required
+  variant metadata, exclude the entire set and record it in
+  `excluded_credible_sets.tsv`. Individual malformed rows are never removed
+  from an otherwise retained set.
 - `--pip-sum-min`: change the default minimum 95% credible-set PIP sum of
   `0.90`.
 - `--credible-set-page-size`, `--locus-page-size`, and `--batch-size`: tune
   GraphQL pagination.
 
-A live schema/conversion check on 2026-07-17 found one example of normal release
-drift: `GCST004030` had 10 current SuSiE-inf credible sets versus 11 in the
-snapshot. Strict mode detected the difference; `--allow-count-mismatch`
-successfully wrote the current 10-set input and recorded both values in QC.
+A full refresh on 2026-07-17 retrieved all API-declared outer and nested pages
+for 401 configured studies. It showed that current method metadata can differ
+from the checked-in snapshot. `source_snapshot_audit.tsv` records that release
+drift separately; `gwas_manifest.tsv` remains a clean description of current,
+validated files.
 
 If Open Targets changes its GraphQL schema, update the query documents and the
 small response-parsing sections in `pull_finemapping.py`; cached requests

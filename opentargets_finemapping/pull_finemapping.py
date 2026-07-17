@@ -61,6 +61,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--pip-sum-min", type=float, default=0.90)
     parser.add_argument("--refresh", action="store_true")
     parser.add_argument("--allow-count-mismatch", action="store_true")
+    parser.add_argument(
+        "--method-policy",
+        choices=("configured", "current-best"),
+        default="configured",
+        help=(
+            "configured: retain methods named in the input snapshot; "
+            "current-best: select one method from current metadata, preferring "
+            "SuSiE-inf, then SuSiE, then PICS."
+        ),
+    )
+    parser.add_argument(
+        "--exclude-invalid-credible-sets",
+        action="store_true",
+        help=(
+            "Exclude an entire credible set when a 95%% row lacks required "
+            "variant metadata; write each exclusion to excluded_credible_sets.tsv."
+        ),
+    )
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument(
         "--dry-run",
@@ -152,6 +170,21 @@ def configured_methods(value: str) -> set[str]:
         for item in re.split(r"[;,|]", value)
         if item.strip()
     }
+
+
+def select_methods(
+    configured: set[str],
+    available: set[str],
+    policy: str,
+) -> set[str]:
+    if policy == "configured":
+        return configured & available
+    if policy != "current-best":
+        raise RuntimeError(f"Unknown method policy: {policy}")
+    for preferred in ("SuSiE-inf", "SuSiE", "PICS"):
+        if preferred in available:
+            return {preferred}
+    return set()
 
 
 def slugify(value: str, max_length: int = 120) -> str:
@@ -369,12 +402,39 @@ def complete_locus_pages(
             raise RuntimeError(
                 f"{credible_set['studyLocusId']}: retrieved {len(rows)}/{expected} locus rows"
             )
-        variant_ids = [row["variant"]["id"] for row in rows]
+        variant_ids = [
+            row["variant"]["id"]
+            for row in rows
+            if isinstance(row.get("variant"), dict) and row["variant"].get("id")
+        ]
         if len(variant_ids) != len(set(variant_ids)):
             raise RuntimeError(
                 f"{credible_set['studyLocusId']}: duplicate variants across locus pages"
             )
         credible_set["locus"]["rows"] = rows
+
+
+def invalid_95_rows(credible_set: dict[str, Any]) -> list[tuple[int, str, float]]:
+    required = ("id", "chromosome", "position", "referenceAllele", "alternateAllele")
+    invalid: list[tuple[int, str, float]] = []
+    for index, row in enumerate(credible_set["locus"]["rows"]):
+        if row.get("is95CredibleSet") is not True:
+            continue
+        variant = row.get("variant")
+        missing = (
+            list(required)
+            if not isinstance(variant, dict)
+            else [field for field in required if variant.get(field) in (None, "")]
+        )
+        if missing:
+            invalid.append(
+                (
+                    index,
+                    "missing variant " + ",".join(missing),
+                    float(row.get("posteriorProbability") or 0),
+                )
+            )
+    return invalid
 
 
 def deterministic_gzip(path: Path, lines: list[str]) -> None:
@@ -394,9 +454,17 @@ def build_study_file(
     *,
     pip_sum_min: float,
     allow_count_mismatch: bool,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+    exclude_invalid_credible_sets: bool = False,
+    method_policy: str = "configured",
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
     study_id = config["study_id"]
-    methods = configured_methods(config["finemap_method"])
+    historical_methods = configured_methods(config["finemap_method"])
+    available_methods = {
+        normalize_method(row.get("finemappingMethod"))
+        for row in credible_sets
+        if row["studyId"] == study_id
+    }
+    methods = select_methods(historical_methods, available_methods, method_policy)
     selected = [
         row
         for row in credible_sets
@@ -412,19 +480,51 @@ def build_study_file(
     )
     expected_count = int(config["n_credible_sets"])
     if len(selected) != expected_count and not allow_count_mismatch:
-        available = sorted(
-            {
-                normalize_method(row.get("finemappingMethod"))
-                for row in credible_sets
-                if row["studyId"] == study_id
-            }
-        )
         raise RuntimeError(
             f"{study_id}: selected {len(selected)} credible sets for methods "
-            f"{sorted(methods)}, expected {expected_count}; available methods={available}"
+            f"{sorted(methods)}, expected {expected_count}; "
+            f"available methods={sorted(available_methods)}"
         )
     if not selected:
-        raise RuntimeError(f"{study_id}: no credible sets matched configured methods {methods}")
+        raise RuntimeError(
+            f"{study_id}: no credible sets selected under {method_policy} policy; "
+            f"historical methods={sorted(historical_methods)}, "
+            f"available methods={sorted(available_methods)}"
+        )
+
+    retrieved_count = len(selected)
+    exclusions: list[dict[str, Any]] = []
+    usable: list[dict[str, Any]] = []
+    for credible_set in selected:
+        invalid = invalid_95_rows(credible_set)
+        if not invalid:
+            usable.append(credible_set)
+            continue
+        detail = "; ".join(
+            f"row {index}: {reason}" for index, reason, _ in invalid
+        )
+        if not exclude_invalid_credible_sets:
+            raise RuntimeError(
+                f"{credible_set['studyLocusId']}: invalid 95% credible-set row(s): "
+                f"{detail}"
+            )
+        exclusions.append(
+            {
+                "study_id": study_id,
+                "study_locus_id": credible_set["studyLocusId"],
+                "finemapping_method": normalize_method(
+                    credible_set.get("finemappingMethod")
+                ),
+                "reason": detail,
+                "n_invalid_95_rows": len(invalid),
+                "missing_posterior_mass": f"{sum(x[2] for x in invalid):.8g}",
+            }
+        )
+    selected = usable
+    if not selected:
+        raise RuntimeError(
+            f"{study_id}: no usable credible sets remain after validation"
+        )
 
     trait_label = slugify(config["trait"])
     filename = f"{trait_label}__{study_id}.fastenloc.gwas.vcf.gz"
@@ -510,13 +610,18 @@ def build_study_file(
     deterministic_gzip(output_path, lines)
 
     manifest_row = dict(config)
+    manifest_row["finemap_method"] = ";".join(sorted(methods))
     manifest_row["n_credible_sets"] = str(len(selected))
     manifest_row["gwas_path"] = str(output_path)
     qc_row = {
         "study_id": study_id,
         "status": "complete",
-        "configured_methods": ";".join(sorted(methods)),
-        "n_credible_sets_expected": expected_count,
+        "historical_methods": ";".join(sorted(historical_methods)),
+        "current_available_methods": ";".join(sorted(available_methods)),
+        "current_selected_methods": ";".join(sorted(methods)),
+        "historical_n_credible_sets": expected_count,
+        "n_credible_sets_retrieved": retrieved_count,
+        "n_credible_sets_excluded": len(exclusions),
         "n_credible_sets_written": len(selected),
         "n_fastenloc_rows": len(lines),
         "n_unique_variants": len(unique_variants),
@@ -525,7 +630,7 @@ def build_study_file(
         "gwas_path": str(output_path),
         "error": "",
     }
-    return manifest_row, qc_row
+    return manifest_row, qc_row, exclusions
 
 
 def output_headers(input_headers: list[str]) -> list[str]:
@@ -601,16 +706,19 @@ def main(argv: list[str] | None = None) -> int:
 
     manifest_rows: list[dict[str, Any]] = []
     qc_rows: list[dict[str, Any]] = []
+    exclusion_rows: list[dict[str, Any]] = []
     for index, config in enumerate(configs, start=1):
         study_id = config["study_id"]
         print(f"[{index}/{len(configs)}] building {study_id}", file=sys.stderr)
         try:
-            manifest_row, qc_row = build_study_file(
+            manifest_row, qc_row, exclusions = build_study_file(
                 config,
                 by_study.get(study_id, []),
                 output_dir,
                 pip_sum_min=args.pip_sum_min,
                 allow_count_mismatch=args.allow_count_mismatch,
+                exclude_invalid_credible_sets=args.exclude_invalid_credible_sets,
+                method_policy=args.method_policy,
             )
         except Exception as exc:  # noqa: BLE001
             if not args.keep_going:
@@ -619,8 +727,19 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "study_id": study_id,
                     "status": "error",
-                    "configured_methods": config["finemap_method"],
-                    "n_credible_sets_expected": config["n_credible_sets"],
+                    "historical_methods": config["finemap_method"],
+                    "current_available_methods": ";".join(
+                        sorted(
+                            {
+                                normalize_method(row.get("finemappingMethod"))
+                                for row in by_study.get(study_id, [])
+                            }
+                        )
+                    ),
+                    "current_selected_methods": "",
+                    "historical_n_credible_sets": config["n_credible_sets"],
+                    "n_credible_sets_retrieved": 0,
+                    "n_credible_sets_excluded": 0,
                     "n_credible_sets_written": 0,
                     "n_fastenloc_rows": 0,
                     "n_unique_variants": 0,
@@ -634,16 +753,75 @@ def main(argv: list[str] | None = None) -> int:
             continue
         manifest_rows.append(manifest_row)
         qc_rows.append(qc_row)
+        exclusion_rows.extend(exclusions)
 
     manifest_path = output_dir / "gwas_manifest.tsv"
     qc_path = output_dir / "retrieval_qc.tsv"
+    audit_path = output_dir / "source_snapshot_audit.tsv"
+    exclusions_path = output_dir / "excluded_credible_sets.tsv"
     write_tsv(manifest_path, output_headers(headers), manifest_rows)
-    qc_headers = list(qc_rows[0]) if qc_rows else [
+    qc_headers = [
         "study_id",
         "status",
+        "current_available_methods",
+        "current_selected_methods",
+        "n_credible_sets_retrieved",
+        "n_credible_sets_excluded",
+        "n_credible_sets_written",
+        "n_fastenloc_rows",
+        "n_unique_variants",
+        "min_credible_set_pip_sum",
+        "max_credible_set_pip_sum",
+        "gwas_path",
         "error",
     ]
     write_tsv(qc_path, qc_headers, qc_rows)
+    audit_headers = [
+        "study_id",
+        "historical_methods",
+        "current_available_methods",
+        "current_selected_methods",
+        "historical_n_credible_sets",
+        "current_n_credible_sets_retrieved",
+        "current_n_credible_sets_excluded",
+        "current_n_credible_sets_written",
+        "method_changed",
+        "count_changed",
+    ]
+    audit_rows = []
+    for row in qc_rows:
+        historical_count = int(row["historical_n_credible_sets"])
+        written_count = int(row["n_credible_sets_written"])
+        historical_methods = configured_methods(row["historical_methods"])
+        selected_methods = configured_methods(row["current_selected_methods"])
+        audit_rows.append(
+            {
+                "study_id": row["study_id"],
+                "historical_methods": row["historical_methods"],
+                "current_available_methods": row["current_available_methods"],
+                "current_selected_methods": row["current_selected_methods"],
+                "historical_n_credible_sets": historical_count,
+                "current_n_credible_sets_retrieved": row[
+                    "n_credible_sets_retrieved"
+                ],
+                "current_n_credible_sets_excluded": row[
+                    "n_credible_sets_excluded"
+                ],
+                "current_n_credible_sets_written": written_count,
+                "method_changed": str(historical_methods != selected_methods).lower(),
+                "count_changed": str(historical_count != written_count).lower(),
+            }
+        )
+    write_tsv(audit_path, audit_headers, audit_rows)
+    exclusion_headers = [
+        "study_id",
+        "study_locus_id",
+        "finemapping_method",
+        "reason",
+        "n_invalid_95_rows",
+        "missing_posterior_mass",
+    ]
+    write_tsv(exclusions_path, exclusion_headers, exclusion_rows)
     failures = sum(row["status"] != "complete" for row in qc_rows)
     print(
         json.dumps(
@@ -653,6 +831,8 @@ def main(argv: list[str] | None = None) -> int:
                 "studies_failed": failures,
                 "pipeline_manifest": str(manifest_path),
                 "qc": str(qc_path),
+                "source_snapshot_audit": str(audit_path),
+                "excluded_credible_sets": str(exclusions_path),
                 "provenance": str(output_dir / "provenance"),
             },
             indent=2,
