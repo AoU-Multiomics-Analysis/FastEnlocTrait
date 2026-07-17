@@ -21,7 +21,7 @@ Open Targets.
 
 - `pull_finemapping.py`: downloader, cache/resume logic, QC, conversion, and
   pipeline-manifest writer.
-- `manifests/opentargets_studies.no_paths.tsv`: the approved 401-study
+- `manifests/opentargets_studies.no_paths.tsv`: the approved 400-study
   configuration. It contains no local or cloud file paths. MTAG and explicit
   multi-trait/pleiotropic studies are excluded.
 - `queries/credible_sets.graphql`: outer credible-set query with the first page
@@ -168,7 +168,7 @@ pipeline from silently accepting API or schema changes. Useful controls:
   GraphQL pagination.
 
 A full refresh on 2026-07-17 retrieved all API-declared outer and nested pages
-for 401 configured studies. It showed that current method metadata can differ
+for the configured studies. It showed that current method metadata can differ
 from the checked-in snapshot. `source_snapshot_audit.tsv` records that release
 drift separately; `gwas_manifest.tsv` remains a clean description of current,
 validated files.

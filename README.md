@@ -97,7 +97,7 @@ Use `harmonized_gene_out` for complete fastENLOC gene-level evidence, including 
 
 [`opentargets_finemapping/`](opentargets_finemapping/) contains a
 self-contained downloader and converter for the approved Open Targets study
-snapshot. It includes a path-redacted 401-study manifest, paginated GraphQL
+snapshot. It includes a path-redacted 400-study manifest, paginated GraphQL
 queries, deterministic fastENLOC conversion, response caching, QC, offline
 tests, and pipeline-manifest generation.
 

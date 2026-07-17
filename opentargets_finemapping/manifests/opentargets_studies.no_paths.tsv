@@ -317,7 +317,6 @@ GCST000392	Type 1 diabetes	autoimmune	PICS	28	841622	gwas_catalog_rest_snpCount	
 GCST000507	Systemic lupus erythematosus	autoimmune	PICS	14	493955	gwas_catalog_rest_snpCount	2252	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
 GCST001191	Type 1 diabetes	autoimmune	PICS	13	10000000	fallback_10000000_no_gwas_catalog_count	19102	Type 1 diabetes		European	Type 1 diabetes
 GCST001795	Systemic lupus erythematosus	autoimmune	PICS	12	2100739	gwas_catalog_rest_snpCount	5050	Systemic lupus erythematosus		East Asian	Systemic lupus erythematosus
-GCST003097	Pediatric autoimmune diseases	autoimmune	PICS	23	7347414	gwas_catalog_rest_snpCount	16753	Systemic lupus erythematosus;Type 1 diabetes		European	Pediatric autoimmune diseases
 GCST003155	Systemic lupus erythematosus	autoimmune	PICS	41	644674	gwas_catalog_rest_snpCount	14267	Systemic lupus erythematosus		European	Systemic lupus erythematosus
 GCST003156	Systemic lupus erythematosus	autoimmune	PICS;SuSiE-inf	37	644674	gwas_catalog_rest_snpCount	14267	Systemic lupus erythematosus		European	Systemic lupus erythematosus
 GCST003622	Systemic lupus erythematosus	autoimmune	PICS	30	6344733	gwas_catalog_rest_snpCount	16052	Systemic lupus erythematosus		East Asian;European	Systemic lupus erythematosus

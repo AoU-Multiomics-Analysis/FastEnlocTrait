@@ -39,9 +39,10 @@ class PullFineMappingTests(unittest.TestCase):
             reader = csv.DictReader(handle, delimiter="\t")
             rows = list(reader)
             headers = reader.fieldnames or []
-        self.assertEqual(len(rows), 401)
+        self.assertEqual(len(rows), 400)
         self.assertNotIn("gwas_path", headers)
-        self.assertEqual(len({row["study_id"] for row in rows}), 401)
+        self.assertEqual(len({row["study_id"] for row in rows}), 400)
+        self.assertNotIn("GCST003097", {row["study_id"] for row in rows})
         flagged = [
             row["trait"]
             for row in rows
